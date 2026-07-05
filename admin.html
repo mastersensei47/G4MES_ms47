@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin - MS47</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial, sans-serif;}
+body{background:#0e0e0e;color:white;padding:20px;}
+h1{margin-bottom:20px;}
+h2{margin:25px 0 10px;}
+.card{background:#1b1b1b;border-radius:10px;padding:20px;max-width:750px;margin:0 auto 20px;border:1px solid #333;}
+label{display:block;margin-top:14px;margin-bottom:4px;font-size:14px;color:#ccc;}
+input[type=text], input[type=password], textarea{
+  width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;
+}
+textarea{min-height:70px;resize:vertical;}
+button{cursor:pointer;border:none;border-radius:6px;padding:10px 16px;font-weight:bold;margin-top:10px;margin-right:8px;}
+.btn-primary{background:#ff0000;color:white;}
+.btn-primary:hover{background:#c70000;}
+.btn-secondary{background:#333;color:white;}
+.btn-secondary:hover{background:#444;}
+.btn-danger{background:#550000;color:white;}
+.btn-danger:hover{background:#800000;}
+.fila{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.fila input{flex:1;}
+.fila button{margin:0;padding:8px 10px;}
+#panel{display:none;max-width:950px;margin:0 auto;}
+#login{max-width:350px;margin:100px auto;text-align:center;}
+.pagina-item{background:#1b1b1b;border-radius:8px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border:1px solid #333;}
+.pagina-info{flex:1;min-width:200px;}
+.pagina-info .titulo{font-weight:bold;}
+.pagina-info .link{font-size:12px;color:#7fd0ff;word-break:break-all;}
+.topbar{display:flex;justify-content:space-between;align-items:center;max-width:950px;margin:0 auto 10px;}
+.msg{margin-top:10px;font-size:14px;}
+.msg.error{color:#ff6b6b;}
+.msg.ok{color:#6bff8f;}
+small{color:#888;display:block;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>🔒 Panel Admin MS47</h1>
+  <div class="card">
+    <label>Clave de acceso</label>
+    <input type="password" id="loginPass" placeholder="Ingresá la clave">
+    <button class="btn-primary" id="btnLogin" style="width:100%;">Entrar</button>
+    <p class="msg error" id="loginMsg"></p>
+  </div>
+</div>
+
+<div id="panel">
+  <div class="topbar">
+    <h1>Panel Admin MS47 - Páginas de juegos</h1>
+    <button class="btn-secondary" id="btnLogout">Bloquear panel</button>
+  </div>
+
+  <div class="card">
+    <h2 id="formTitulo">Nueva página</h2>
+
+    <label>Título del juego</label>
+    <input type="text" id="fTitulo" placeholder="Ej: God of War Ragnarök">
+
+    <label>Slug (parte del link, se genera solo)</label>
+    <input type="text" id="fSlug" placeholder="ej-god-of-war-ragnarok">
+
+    <label>Imagen de fondo del hero (URL, opcional)</label>
+    <input type="text" id="fFondo" placeholder="https://...">
+
+    <label>Video izquierdo (link normal de YouTube, opcional)</label>
+    <input type="text" id="fVideoIzq">
+    <label>Video centro (opcional)</label>
+    <input type="text" id="fVideoCentro">
+    <label>Video derecho (opcional)</label>
+    <input type="text" id="fVideoDer">
+
+    <label>Título de la sección de descargas</label>
+    <input type="text" id="fPeso" placeholder="Ej: DESCOMPRIMIDO (90GB) solo la parte 1 tiene acortador">
+
+    <label>Links de descarga</label>
+    <div id="descargasList"></div>
+    <button class="btn-secondary" id="btnAddDescarga" type="button">+ Agregar link</button>
+
+    <label>Link de verificación (video de Drive/YouTube embebido, opcional)</label>
+    <input type="text" id="fVerificacion" placeholder="https://drive.google.com/file/d/.../preview">
+
+    <label>Contenido / DLCs (una línea por ítem, opcional)</label>
+    <div id="contenidoList"></div>
+    <button class="btn-secondary" id="btnAddContenido" type="button">+ Agregar línea</button>
+
+    <label>Requisitos del sistema (una línea por ítem, opcional)</label>
+    <div id="requisitosList"></div>
+    <button class="btn-secondary" id="btnAddRequisito" type="button">+ Agregar línea</button>
+
+    <label>Información del juego (una línea por ítem, opcional)</label>
+    <div id="infoJuegoList"></div>
+    <button class="btn-secondary" id="btnAddInfo" type="button">+ Agregar línea</button>
+
+    <label>Galería de capturas (una URL de imagen por fila, opcional)</label>
+    <div id="galeriaList"></div>
+    <button class="btn-secondary" id="btnAddImg" type="button">+ Agregar imagen</button>
+
+    <div>
+      <button class="btn-primary" id="btnGuardar" type="button">Guardar página</button>
+      <button class="btn-secondary" id="btnCancelar" type="button" style="display:none;">Cancelar edición</button>
+    </div>
+    <p class="msg" id="formMsg"></p>
+  </div>
+
+  <h2>Páginas existentes</h2>
+  <div id="listaPaginas"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, get, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBjQB3yJdJPc44qvmge-H_961QJ1s_kh7E",
+    authDomain: "tv-fulvo.firebaseapp.com",
+    projectId: "tv-fulvo",
+    storageBucket: "tv-fulvo.firebasestorage.app",
+    messagingSenderId: "733955226142",
+    appId: "1:733955226142:web:d49871efff59452b604c0f",
+    databaseURL: "https://tv-fulvo-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ⚠️ Cambiá esta clave por la que quieras usar para entrar al panel
+const CLAVE_ADMIN = "ms47admin";
+
+const loginDiv = document.getElementById("login");
+const panelDiv = document.getElementById("panel");
+const loginMsg = document.getElementById("loginMsg");
+const formMsg = document.getElementById("formMsg");
+
+document.getElementById("btnLogin").addEventListener("click", intentarLogin);
+document.getElementById("loginPass").addEventListener("keydown", (e) => { if(e.key === "Enter") intentarLogin(); });
+
+function intentarLogin(){
+  const pass = document.getElementById("loginPass").value;
+  if(pass === CLAVE_ADMIN){
+    loginDiv.style.display = "none";
+    panelDiv.style.display = "block";
+    cargarLista();
+  }else{
+    loginMsg.textContent = "Clave incorrecta.";
+  }
+}
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  panelDiv.style.display = "none";
+  loginDiv.style.display = "block";
+  document.getElementById("loginPass").value = "";
+});
+
+// ---------- Helpers de filas dinámicas ----------
+function crearFilaSimple(contenedorId, valor=""){
+  const cont = document.getElementById(contenedorId);
+  const fila = document.createElement("div");
+  fila.className = "fila";
+  fila.innerHTML = `<input type="text" value="${(valor||"").replace(/"/g,'&quot;')}"><button class="btn-danger" type="button">✕</button>`;
+  fila.querySelector("button").addEventListener("click", () => fila.remove());
+  cont.appendChild(fila);
+}
+
+function crearFilaDescarga(label="", url=""){
+  const cont = document.getElementById("descargasList");
+  const fila = document.createElement("div");
+  fila.className = "fila";
+  fila.innerHTML = `
+    <input type="text" placeholder="Nombre (ej: Parte 1)" value="${(label||"").replace(/"/g,'&quot;')}" class="dLabel" style="max-width:160px;">
+    <input type="text" placeholder="URL de descarga" value="${(url||"").replace(/"/g,'&quot;')}" class="dUrl">
+    <button class="btn-danger" type="button">✕</button>`;
+  fila.querySelector("button").addEventListener("click", () => fila.remove());
+  cont.appendChild(fila);
+}
+
+document.getElementById("btnAddDescarga").addEventListener("click", () => crearFilaDescarga());
+document.getElementById("btnAddContenido").addEventListener("click", () => crearFilaSimple("contenidoList"));
+document.getElementById("btnAddRequisito").addEventListener("click", () => crearFilaSimple("requisitosList"));
+document.getElementById("btnAddInfo").addEventListener("click", () => crearFilaSimple("infoJuegoList"));
+document.getElementById("btnAddImg").addEventListener("click", () => crearFilaSimple("galeriaList"));
+
+function leerFilasSimples(contenedorId){
+  return Array.from(document.querySelectorAll(`#${contenedorId} input`)).map(i => i.value.trim()).filter(Boolean);
+}
+function leerDescargas(){
+  const filas = document.querySelectorAll("#descargasList .fila");
+  const out = [];
+  filas.forEach(f => {
+    const label = f.querySelector(".dLabel").value.trim();
+    const url = f.querySelector(".dUrl").value.trim();
+    if(url) out.push({label: label || "Descargar", url});
+  });
+  return out;
+}
+
+function slugify(str){
+  return str.toString().toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/(^-|-$)/g,"");
+}
+
+document.getElementById("fTitulo").addEventListener("input", (e) => {
+  const slugInput = document.getElementById("fSlug");
+  if(!slugInput.readOnly) slugInput.value = slugify(e.target.value);
+});
+
+let editandoSlug = null;
+
+function limpiarFormulario(){
+  ["fTitulo","fSlug","fFondo","fVideoIzq","fVideoCentro","fVideoDer","fPeso","fVerificacion"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("fSlug").readOnly = false;
+  ["descargasList","contenidoList","requisitosList","infoJuegoList","galeriaList"].forEach(id => document.getElementById(id).innerHTML = "");
+  document.getElementById("formTitulo").textContent = "Nueva página";
+  document.getElementById("btnCancelar").style.display = "none";
+  formMsg.textContent = "";
+  editandoSlug = null;
+}
+
+document.getElementById("btnCancelar").addEventListener("click", limpiarFormulario);
+
+document.getElementById("btnGuardar").addEventListener("click", async () => {
+  formMsg.className = "msg";
+  formMsg.textContent = "";
+
+  const titulo = document.getElementById("fTitulo").value.trim();
+  const slug = slugify(document.getElementById("fSlug").value.trim());
+
+  if(!titulo || !slug){
+    formMsg.className = "msg error";
+    formMsg.textContent = "Poné al menos un título (el slug se genera solo).";
+    return;
+  }
+
+  const data = {
+    titulo,
+    fondo: document.getElementById("fFondo").value.trim(),
+    videoIzq: document.getElementById("fVideoIzq").value.trim(),
+    videoCentro: document.getElementById("fVideoCentro").value.trim(),
+    videoDer: document.getElementById("fVideoDer").value.trim(),
+    pesoTitulo: document.getElementById("fPeso").value.trim(),
+    descargas: leerDescargas(),
+    verificacion: document.getElementById("fVerificacion").value.trim(),
+    contenido: leerFilasSimples("contenidoList"),
+    requisitos: leerFilasSimples("requisitosList"),
+    infoJuego: leerFilasSimples("infoJuegoList"),
+    galeria: leerFilasSimples("galeriaList"),
+  };
+
+  try{
+    if(!editandoSlug){
+      const existente = await get(ref(db, "paginasJuegos/" + slug));
+      if(existente.exists()){
+        formMsg.className = "msg error";
+        formMsg.textContent = "Ya existe una página con ese slug. Cambiá el título o el slug.";
+        return;
+      }
+    }
+    await set(ref(db, "paginasJuegos/" + slug), data);
+    formMsg.className = "msg ok";
+    formMsg.textContent = "¡Página guardada! Link: juego.html?slug=" + slug;
+    limpiarFormulario();
+    cargarLista();
+  }catch(err){
+    console.error(err);
+    formMsg.className = "msg error";
+    formMsg.textContent = "Error al guardar los datos.";
+  }
+});
+
+async function cargarLista(){
+  const cont = document.getElementById("listaPaginas");
+  cont.innerHTML = "Cargando...";
+  try{
+    const snap = await get(ref(db, "paginasJuegos"));
+    const data = snap.val() || {};
+    const slugs = Object.keys(data);
+    if(slugs.length === 0){
+      cont.innerHTML = "<p>No hay páginas creadas todavía.</p>";
+      return;
+    }
+    cont.innerHTML = "";
+    slugs.forEach(slug => {
+      const d = data[slug];
+      const link = `${location.origin}${location.pathname.replace("admin.html","juego.html")}?slug=${slug}`;
+      const item = document.createElement("div");
+      item.className = "pagina-item";
+      item.innerHTML = `
+        <div class="pagina-info">
+          <div class="titulo">${d.titulo || slug}</div>
+          <div class="link">${link}</div>
+        </div>
+        <div>
+          <button class="btn-secondary" type="button" data-accion="copiar">Copiar link</button>
+          <button class="btn-secondary" type="button" data-accion="editar">Editar</button>
+          <button class="btn-danger" type="button" data-accion="eliminar">Eliminar</button>
+        </div>`;
+      item.querySelector('[data-accion="copiar"]').addEventListener("click", () => navigator.clipboard.writeText(link));
+      item.querySelector('[data-accion="editar"]').addEventListener("click", () => cargarParaEditar(slug, d));
+      item.querySelector('[data-accion="eliminar"]').addEventListener("click", () => eliminarPagina(slug));
+      cont.appendChild(item);
+    });
+  }catch(err){
+    console.error(err);
+    cont.innerHTML = "<p>Error al cargar las páginas.</p>";
+  }
+}
+
+function cargarParaEditar(slug, d){
+  editandoSlug = slug;
+  document.getElementById("formTitulo").textContent = "Editando: " + (d.titulo || slug);
+  document.getElementById("fTitulo").value = d.titulo || "";
+  document.getElementById("fSlug").value = slug;
+  document.getElementById("fSlug").readOnly = true;
+  document.getElementById("fFondo").value = d.fondo || "";
+  document.getElementById("fVideoIzq").value = d.videoIzq || "";
+  document.getElementById("fVideoCentro").value = d.videoCentro || "";
+  document.getElementById("fVideoDer").value = d.videoDer || "";
+  document.getElementById("fPeso").value = d.pesoTitulo || "";
+  document.getElementById("fVerificacion").value = d.verificacion || "";
+
+  document.getElementById("descargasList").innerHTML = "";
+  (d.descargas || []).forEach(desc => crearFilaDescarga(desc.label, desc.url));
+
+  document.getElementById("contenidoList").innerHTML = "";
+  (d.contenido || []).forEach(v => crearFilaSimple("contenidoList", v));
+
+  document.getElementById("requisitosList").innerHTML = "";
+  (d.requisitos || []).forEach(v => crearFilaSimple("requisitosList", v));
+
+  document.getElementById("infoJuegoList").innerHTML = "";
+  (d.infoJuego || []).forEach(v => crearFilaSimple("infoJuegoList", v));
+
+  document.getElementById("galeriaList").innerHTML = "";
+  (d.galeria || []).forEach(v => crearFilaSimple("galeriaList", v));
+
+  document.getElementById("btnCancelar").style.display = "inline-block";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+async function eliminarPagina(slug){
+  if(!confirm("¿Seguro que querés eliminar esta página? No se puede deshacer.")) return;
+  try{
+    await remove(ref(db, "paginasJuegos/" + slug));
+    cargarLista();
+  }catch(err){
+    console.error(err);
+    alert("Error al eliminar la página.");
+  }
+}
+</script>
+</body>
+</html>
