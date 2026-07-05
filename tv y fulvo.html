@@ -60,22 +60,22 @@
 
 <div class="container">
     
-    <!-- NUEVA SECCIÓN: AGENDA DE FÚTBOL EN VIVO FIJA -->
+<!-- NUEVA SECCIÓN: AGENDA DE FÚTBOL EN VIVO FIJA -->
     <h2>⚽ Agenda en Vivo</h2>
     <div style="max-width: 800px; margin: 0 auto 40px; padding: 0 15px;">
         <div id="widget-xncemr87nh8d" class="scoreaxis-widget" style="width: auto; height: auto; font-size: 14px; background-color: #1a162b; color: #ffffff; border: 1px solid #32294f; border-radius: 8px; overflow: auto;">
+            
+            <!-- Script de inicialización de Scoreaxis -->
             <script src="https://widgets.scoreaxis.com/api/football/live-match/66717b45759a56977004a930?widgetId=xncemr87nh8d&lang=es&lineupsBlock=1&eventsBlock=1&statsBlock=1&links=1&font=heebo&fontSize=14&rowDensity=100&widgetWidth=auto&widgetHeight=auto&bodyColor=%231a162b&textColor=%23ffffff&linkColor=%23a288e3&borderColor=%2332294f&tabColor=%2332294f" async></script>
+            
+            <!-- Contenedor requerido para el renderizado -->
+            <div id="scoreaxis-widget-container"></div>
+            
             <div class="widget-main-link" style="padding: 6px 12px; font-weight: 500; font-size: 12px; text-align: center; border-top: 1px solid #32294f;">
-                Datos en vivo por <a href="https://www.scoreaxis.com/" style="color: #a288e3; text-decoration: none;">Scoreaxis</a>
+                Datos en vivo por <a href="https://www.scoreaxis.com/" style="color: #a288e3; text-decoration: none;" target="_blank">Scoreaxis</a>
             </div>
         </div>
     </div>
-
-    <!-- Acá Firebase va a inyectar el resto de las categorías de canales (Cine, Nacionales, etc.) -->
-    <div id="main-content">
-        <p style="text-align:center;">Cargando sistema MS47...</p>
-    </div>
-</div>
 
 <div id="admin-trigger" onclick="checkAdmin()"></div>
 
