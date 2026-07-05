@@ -8,32 +8,6 @@
     <style>
         :root { --accent: #00bfff; --bg: #0a0a0a; --card-bg: #1a1a1a; --admin-bg: #111; }
         body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; padding-bottom: 50px; }
-    </style>
-</head>
-<body>
-
-    <!-- Acá empieza lo visual: Contenedor centrado para el Widget -->
-    <div style="max-width: 800px; margin: 20px auto; padding: 0 15px;">
-        
-        <div id="widget-xncemr87nh8d" class="scoreaxis-widget" style="width: auto; height: auto; font-size: 14px; background-color: #1a162b; color: #ffffff; border: 1px solid #32294f; border-radius: 8px; overflow: auto;">
-            
-            <script src="https://widgets.scoreaxis.com/api/football/live-match/66717b45759a56977004a930?widgetId=xncemr87nh8d&lang=es&lineupsBlock=1&eventsBlock=1&statsBlock=1&links=1&font=heebo&fontSize=14&rowDensity=100&widgetWidth=auto&widgetHeight=auto&bodyColor=%231a162b&textColor=%23ffffff&linkColor=%23a288e3&borderColor=%2332294f&tabColor=%2332294f" async></script>
-            
-            <div class="widget-main-link" style="padding: 6px 12px; font-weight: 500; font-size: 12px; text-align: center; border-top: 1px solid #32294f;">
-                Datos en vivo por <a href="https://www.scoreaxis.com/" style="color: #a288e3; text-decoration: none;">Scoreaxis</a>
-            </div>
-            
-        </div>
-        
-    </div>
-
-    <!-- El resto de tu contenido de la página va acá abajo... -->
-
-</body>
-</html>
-    <style>
-        :root { --accent: #00bfff; --bg: #0a0a0a; --card-bg: #1a1a1a; --admin-bg: #111; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; padding-bottom: 50px; }
         
         header { position: fixed; top: 0; width: 100%; background: #111; padding: 15px 0; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 2px solid var(--accent); z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .volver { position: absolute; left: 20px; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 5px 15px; border-radius: 20px; font-size: 14px; transition: 0.3s; }
@@ -84,8 +58,23 @@
     <span>📺 TV EN VIVO MS47</span>
 </header>
 
-<div class="container" id="main-content">
-    <p style="text-align:center;">Cargando sistema MS47...</p>
+<div class="container">
+    
+    <!-- NUEVA SECCIÓN: AGENDA DE FÚTBOL EN VIVO FIJA -->
+    <h2>⚽ Agenda en Vivo</h2>
+    <div style="max-width: 800px; margin: 0 auto 40px; padding: 0 15px;">
+        <div id="widget-xncemr87nh8d" class="scoreaxis-widget" style="width: auto; height: auto; font-size: 14px; background-color: #1a162b; color: #ffffff; border: 1px solid #32294f; border-radius: 8px; overflow: auto;">
+            <script src="https://widgets.scoreaxis.com/api/football/live-match/66717b45759a56977004a930?widgetId=xncemr87nh8d&lang=es&lineupsBlock=1&eventsBlock=1&statsBlock=1&links=1&font=heebo&fontSize=14&rowDensity=100&widgetWidth=auto&widgetHeight=auto&bodyColor=%231a162b&textColor=%23ffffff&linkColor=%23a288e3&borderColor=%2332294f&tabColor=%2332294f" async></script>
+            <div class="widget-main-link" style="padding: 6px 12px; font-weight: 500; font-size: 12px; text-align: center; border-top: 1px solid #32294f;">
+                Datos en vivo por <a href="https://www.scoreaxis.com/" style="color: #a288e3; text-decoration: none;">Scoreaxis</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acá Firebase va a inyectar el resto de las categorías de canales (Cine, Nacionales, etc.) -->
+    <div id="main-content">
+        <p style="text-align:center;">Cargando sistema MS47...</p>
+    </div>
 </div>
 
 <div id="admin-trigger" onclick="checkAdmin()"></div>
@@ -120,8 +109,7 @@
         <button class="filter-btn" onclick="setFilter('nacionales', this)">NACIONALES</button>
     </div>
 
-    <div class="admin-grid-list" id="admin-list">
-        </div>
+    <div class="admin-grid-list" id="admin-list"></div>
 </div>
 
 <script type="module">
