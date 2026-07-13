@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS47</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Inter', 'Segoe UI', Arial, sans-serif; }
+body{ background:#0a0a0a; color:white; overflow-x:hidden; }
+h1{ font-family:'Poppins',Arial,sans-serif; }
+
+/* ===== NAVBAR ===== */
+.navbar{ width:100%; background:#111; position:fixed; top:0; left:0; z-index:1000; border-bottom:2px solid #ff0000; }
+.nav-container{ max-width:1400px; margin:auto; display:flex; flex-direction:column; align-items:center; padding:10px; }
+.logo{ font-size:22px; font-weight:bold; color:#fff; text-shadow:0 0 10px #ff0000; text-decoration:none; margin-bottom:8px; font-family:'Poppins',sans-serif; }
+.nav-links{ display:flex; gap:8px; justify-content:center; width:100%; }
+.nav-links a{ color:#fff; text-decoration:none; background:#222; width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; border:1px solid #333; }
+.btn-jugar{ border-color:#00ff00 !important; }
+
+@media(min-width:769px){
+  .nav-container{ flex-direction:row; padding:10px 20px; }
+  .logo{ margin-bottom:0; margin-right:20px; }
+  .nav-links{ width:auto; }
+  .nav-links a{ border-radius:8px; width:auto; height:auto; padding:8px 12px; font-size:14px; }
+  .nav-links a span{ display:inline; margin-left:5px; }
+}
+
+/* ===== REPRODUCTOR ===== */
+main{ margin-top:130px; padding:10px; max-width:900px; margin-left:auto; margin-right:auto; }
+@media(min-width:769px){ main{ margin-top:80px; } }
+
+.reproductor-box{ background:#000; border-radius:10px; overflow:hidden; border:1px solid #333; box-shadow:0 0 20px rgba(255,0,0,0.3); margin-bottom:20px; }
+.video-container{ position:relative; padding-top:56.25%; background:#000; }
+.video-container iframe{ position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
+
+.info-capitulo{ padding:15px; background:#111; border-top:2px solid #ff0000; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.info-capitulo h1{ font-size:16px; color:#fff; }
+.badge-tipo{ font-size:11px; padding:4px 10px; border-radius:20px; font-weight:bold; }
+.badge-tipo.youtube{ background:#ff0000; }
+.badge-tipo.drive{ background:#1a73e8; }
+
+.grid-capitulos{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:15px; }
+.cap-btn{ background:#1b1b1b; border:1px solid #333; color:white; padding:12px 0; text-align:center; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px; transition:0.2s; }
+.cap-btn:hover{ background:#292929; }
+.cap-btn.active{ background:#ff0000; border-color:#fff; box-shadow:0 0 10px #ff0000; }
+
+@media(min-width:769px){ .grid-capitulos{ grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); } }
+
+.estado-box{ text-align:center; margin-top:60px; color:#aaa; font-size:16px; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="logo">MS47</a>
+    <div class="nav-links">
+      <a href="index.html">🎮<span>Juegos</span></a>
+      <a href="https://gam.onl/" target="_blank" class="btn-jugar">🕹️<span>Online</span></a>
+      <a href="https://www.youtube.com/@master-sensei47" target="_blank">🎬<span>YT</span></a>
+      <a href="https://www.instagram.com/master__sensei47" target="_blank">📸<span>IG</span></a>
+      <a href="https://www.tiktok.com/@mastersensei47" target="_blank">📱<span>TK</span></a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+  <p class="estado-box" id="estado">Cargando...</p>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBjQB3yJdJPc44qvmge-H_961QJ1s_kh7E",
+    authDomain: "tv-fulvo.firebaseapp.com",
+    projectId: "tv-fulvo",
+    storageBucket: "tv-fulvo.firebasestorage.app",
+    messagingSenderId: "733955226142",
+    appId: "1:733955226142:web:d49871efff59452b604c0f",
+    databaseURL: "https://tv-fulvo-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+function esc(str){
+  const div = document.createElement("div");
+  div.innerText = str || "";
+  return div.innerHTML;
+}
+
+function construirSrc(cap, autoplay){
+  if(cap.tipo === "youtube"){
+    return `https://www.youtube.com/embed/${cap.id}?rel=0${autoplay ? "&autoplay=1" : ""}`;
+  }
+  // drive
+  return `https://drive.google.com/file/d/${cap.id}/preview?t=${Date.now()}`;
+}
+
+let serieActual = null;
+let tituloSerie = "";
+
+window.cambiarCapitulo = function(index){
+  const cap = serieActual[index];
+  if(!cap) return;
+
+  const player = document.getElementById("video-player");
+  player.src = construirSrc(cap, true);
+
+  document.getElementById("titulo-display").innerText = `${tituloSerie} - ${cap.label}`;
+  const badge = document.getElementById("badge-tipo");
+  badge.textContent = cap.tipo === "youtube" ? "YouTube" : "Drive";
+  badge.className = "badge-tipo " + (cap.tipo === "youtube" ? "youtube" : "drive");
+
+  document.querySelectorAll(".cap-btn").forEach(btn => btn.classList.remove("active"));
+  document.getElementById("capbtn-" + index).classList.add("active");
+
+  window.scrollTo({ top:0, behavior:"smooth" });
+};
+
+async function cargarSerie(){
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get("slug");
+  const main = document.getElementById("main");
+
+  if(!slug){
+    main.innerHTML = `<p class="estado-box">No se especificó ninguna serie (falta ?slug= en el link).</p>`;
+    return;
+  }
+
+  try{
+    const snap = await get(ref(db, "paginasSeries/" + slug));
+    if(!snap.exists()){
+      main.innerHTML = `<p class="estado-box">Esta serie no existe o fue eliminada.</p>`;
+      return;
+    }
+
+    const s = snap.val();
+    const capitulos = (s.capitulos || []).filter(c => c && c.id);
+    serieActual = capitulos;
+    tituloSerie = s.titulo || "MS47";
+    document.title = `${tituloSerie} - MS47`;
+
+    if(capitulos.length === 0){
+      main.innerHTML = `<p class="estado-box">Esta serie todavía no tiene capítulos cargados.</p>`;
+      return;
+    }
+
+    let botonesHtml = "";
+    capitulos.forEach((cap, i) => {
+      botonesHtml += `<div class="cap-btn${i===0 ? " active" : ""}" id="capbtn-${i}" onclick="cambiarCapitulo(${i})">${esc(cap.label)}</div>`;
+    });
+
+    main.innerHTML = `
+      <section class="reproductor-box">
+        <div class="video-container">
+          <iframe id="video-player" src="${construirSrc(capitulos[0], false)}" allowfullscreen></iframe>
+        </div>
+        <div class="info-capitulo">
+          <h1 id="titulo-display">${esc(tituloSerie)} - ${esc(capitulos[0].label)}</h1>
+          <span class="badge-tipo ${capitulos[0].tipo === "youtube" ? "youtube" : "drive"}" id="badge-tipo">${capitulos[0].tipo === "youtube" ? "YouTube" : "Drive"}</span>
+        </div>
+      </section>
+      <div class="grid-capitulos">${botonesHtml}</div>
+    `;
+  }catch(err){
+    console.error(err);
+    main.innerHTML = `<p class="estado-box">Ocurrió un error al cargar la serie.</p>`;
+  }
+}
+
+cargarSerie();
+</script>
+
+</body>
+</html>
