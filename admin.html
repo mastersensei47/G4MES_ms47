@@ -135,8 +135,29 @@ small{color:#888;display:block;margin-top:4px;}
     <label>Slug (parte del link, se genera solo)</label>
     <input type="text" id="sSlug" placeholder="o11ce">
 
+    <label>Tipo</label>
+    <select id="sTipoContenido" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+      <option value="serie">Serie (varios capítulos)</option>
+      <option value="pelicula">Película (un solo video)</option>
+    </select>
+
+    <label>Poster / imagen vertical (URL, opcional)</label>
+    <input type="text" id="sPoster" placeholder="https://...">
+
+    <label>Imagen de fondo (URL, opcional)</label>
+    <input type="text" id="sFondo" placeholder="https://...">
+
+    <label>Año (opcional)</label>
+    <input type="text" id="sAnio" placeholder="2024">
+
+    <label>Género (opcional)</label>
+    <input type="text" id="sGenero" placeholder="Acción, Aventura, Anime...">
+
+    <label>Sinopsis (opcional)</label>
+    <textarea id="sSinopsis" placeholder="De qué trata..."></textarea>
+
     <label>Capítulos</label>
-    <p class="hint">Pegá el link normal de YouTube (podés usar videos "no listados", funcionan igual) o el link para compartir de Google Drive. Se detecta solo cuál es cuál.</p>
+    <p class="hint">Pegá el link normal de YouTube (podés usar videos "no listados", funcionan igual) o el link para compartir de Google Drive. Se detecta solo cuál es cuál. Si es una película, cargá un solo capítulo.</p>
     <div id="capitulosList"></div>
     <button class="btn-secondary" id="btnAddCapitulo" type="button">+ Agregar capítulo</button>
 
@@ -478,6 +499,12 @@ function limpiarFormularioSerie(){
   document.getElementById("sTitulo").value = "";
   document.getElementById("sSlug").value = "";
   document.getElementById("sSlug").readOnly = false;
+  document.getElementById("sTipoContenido").value = "serie";
+  document.getElementById("sPoster").value = "";
+  document.getElementById("sFondo").value = "";
+  document.getElementById("sAnio").value = "";
+  document.getElementById("sGenero").value = "";
+  document.getElementById("sSinopsis").value = "";
   document.getElementById("capitulosList").innerHTML = "";
   document.getElementById("formTituloSerie").textContent = "Nueva serie";
   document.getElementById("btnCancelarSerie").style.display = "none";
@@ -515,7 +542,16 @@ document.getElementById("btnGuardarSerie").addEventListener("click", async () =>
         return;
       }
     }
-    await set(ref(db, "paginasSeries/" + slug), { titulo, capitulos });
+    await set(ref(db, "paginasSeries/" + slug), {
+      titulo,
+      tipo: document.getElementById("sTipoContenido").value,
+      poster: document.getElementById("sPoster").value.trim(),
+      fondo: document.getElementById("sFondo").value.trim(),
+      anio: document.getElementById("sAnio").value.trim(),
+      genero: document.getElementById("sGenero").value.trim(),
+      sinopsis: document.getElementById("sSinopsis").value.trim(),
+      capitulos
+    });
     formMsgSerie.className = "msg ok";
     formMsgSerie.textContent = "¡Serie guardada! Link: serie.html?slug=" + slug;
     limpiarFormularioSerie();
@@ -571,6 +607,12 @@ function cargarSerieParaEditar(slug, s){
   document.getElementById("sTitulo").value = s.titulo || "";
   document.getElementById("sSlug").value = slug;
   document.getElementById("sSlug").readOnly = true;
+  document.getElementById("sTipoContenido").value = s.tipo || "serie";
+  document.getElementById("sPoster").value = s.poster || "";
+  document.getElementById("sFondo").value = s.fondo || "";
+  document.getElementById("sAnio").value = s.anio || "";
+  document.getElementById("sGenero").value = s.genero || "";
+  document.getElementById("sSinopsis").value = s.sinopsis || "";
 
   document.getElementById("capitulosList").innerHTML = "";
   (s.capitulos || []).forEach(cap => {
