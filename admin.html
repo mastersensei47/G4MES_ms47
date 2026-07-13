@@ -36,6 +36,10 @@ button{cursor:pointer;border:none;border-radius:6px;padding:10px 16px;font-weigh
 .msg.error{color:#ff6b6b;}
 .msg.ok{color:#6bff8f;}
 small{color:#888;display:block;margin-top:4px;}
+.tabs{display:flex;gap:10px;max-width:950px;margin:0 auto 20px;}
+.tab-btn{background:#1b1b1b;color:#aaa;border:1px solid #333;border-radius:8px;padding:10px 18px;font-weight:bold;cursor:pointer;}
+.tab-btn.active{background:#ff0000;color:white;border-color:#ff0000;}
+.hint{color:#888;font-size:12px;margin-top:4px;}
 </style>
 </head>
 <body>
@@ -52,9 +56,16 @@ small{color:#888;display:block;margin-top:4px;}
 
 <div id="panel">
   <div class="topbar">
-    <h1>Panel Admin MS47 - Páginas de juegos</h1>
+    <h1>Panel Admin MS47</h1>
     <button class="btn-secondary" id="btnLogout">Bloquear panel</button>
   </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabBtnJuegos" type="button">🎮 Juegos</button>
+    <button class="tab-btn" id="tabBtnSeries" type="button">📺 Series / Capítulos</button>
+  </div>
+
+  <div id="tabJuegos">
 
   <div class="card">
     <h2 id="formTitulo">Nueva página</h2>
@@ -110,6 +121,37 @@ small{color:#888;display:block;margin-top:4px;}
 
   <h2>Páginas existentes</h2>
   <div id="listaPaginas"></div>
+
+  </div><!-- /tabJuegos -->
+
+  <div id="tabSeries" style="display:none;">
+
+  <div class="card">
+    <h2 id="formTituloSerie">Nueva serie</h2>
+
+    <label>Título de la serie</label>
+    <input type="text" id="sTitulo" placeholder="Ej: O11CE">
+
+    <label>Slug (parte del link, se genera solo)</label>
+    <input type="text" id="sSlug" placeholder="o11ce">
+
+    <label>Capítulos</label>
+    <p class="hint">Pegá el link normal de YouTube (podés usar videos "no listados", funcionan igual) o el link para compartir de Google Drive. Se detecta solo cuál es cuál.</p>
+    <div id="capitulosList"></div>
+    <button class="btn-secondary" id="btnAddCapitulo" type="button">+ Agregar capítulo</button>
+
+    <div>
+      <button class="btn-primary" id="btnGuardarSerie" type="button">Guardar serie</button>
+      <button class="btn-secondary" id="btnCancelarSerie" type="button" style="display:none;">Cancelar edición</button>
+    </div>
+    <p class="msg" id="formMsgSerie"></p>
+  </div>
+
+  <h2>Series existentes</h2>
+  <div id="listaSeries"></div>
+
+  </div><!-- /tabSeries -->
+
 </div>
 
 <script type="module">
@@ -155,6 +197,21 @@ document.getElementById("btnLogout").addEventListener("click", () => {
   panelDiv.style.display = "none";
   loginDiv.style.display = "block";
   document.getElementById("loginPass").value = "";
+});
+
+// ---------- Tabs ----------
+document.getElementById("tabBtnJuegos").addEventListener("click", () => {
+  document.getElementById("tabJuegos").style.display = "block";
+  document.getElementById("tabSeries").style.display = "none";
+  document.getElementById("tabBtnJuegos").classList.add("active");
+  document.getElementById("tabBtnSeries").classList.remove("active");
+});
+document.getElementById("tabBtnSeries").addEventListener("click", () => {
+  document.getElementById("tabJuegos").style.display = "none";
+  document.getElementById("tabSeries").style.display = "block";
+  document.getElementById("tabBtnSeries").classList.add("active");
+  document.getElementById("tabBtnJuegos").classList.remove("active");
+  cargarListaSeries();
 });
 
 // ---------- Helpers de filas dinámicas ----------
@@ -352,6 +409,190 @@ async function eliminarPagina(slug){
   }catch(err){
     console.error(err);
     alert("Error al eliminar la página.");
+  }
+}
+
+// ================= SERIES / CAPÍTULOS =================
+
+document.getElementById("sTitulo").addEventListener("input", (e) => {
+  const slugInput = document.getElementById("sSlug");
+  if(!slugInput.readOnly) slugInput.value = slugify(e.target.value);
+});
+
+// Detecta si el link pegado es de YouTube o de Google Drive y saca el ID limpio
+function parseVideoInput(valor){
+  valor = (valor || "").trim();
+  if(/youtu\.be|youtube\.com/i.test(valor)){
+    const watchMatch = valor.match(/[?&]v=([^&]+)/);
+    const shortMatch = valor.match(/youtu\.be\/([^?&]+)/);
+    const embedMatch = valor.match(/embed\/([^?&]+)/);
+    let id = "";
+    if(watchMatch) id = watchMatch[1];
+    else if(shortMatch) id = shortMatch[1];
+    else if(embedMatch) id = embedMatch[1];
+    else id = valor;
+    return { tipo: "youtube", id };
+  }
+  if(/drive\.google\.com/i.test(valor)){
+    const m = valor.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    return { tipo: "drive", id: m ? m[1] : valor };
+  }
+  // Sin dominio reconocido: si parece un ID de YouTube (11 caracteres), lo tratamos como tal
+  if(/^[a-zA-Z0-9_-]{11}$/.test(valor)) return { tipo: "youtube", id: valor };
+  // Si no, asumimos que es directamente un ID de Drive
+  return { tipo: "drive", id: valor };
+}
+
+function crearFilaCapitulo(label="", valor=""){
+  const cont = document.getElementById("capitulosList");
+  const fila = document.createElement("div");
+  fila.className = "fila";
+  fila.innerHTML = `
+    <input type="text" placeholder="Nombre (ej: Capítulo 1)" value="${(label||"").replace(/"/g,'&quot;')}" class="cLabel" style="max-width:160px;">
+    <input type="text" placeholder="Link de YouTube o de Drive" value="${(valor||"").replace(/"/g,'&quot;')}" class="cValor">
+    <button class="btn-danger" type="button">✕</button>`;
+  fila.querySelector("button").addEventListener("click", () => fila.remove());
+  cont.appendChild(fila);
+}
+
+document.getElementById("btnAddCapitulo").addEventListener("click", () => crearFilaCapitulo());
+
+function leerCapitulos(){
+  const filas = document.querySelectorAll("#capitulosList .fila");
+  const out = [];
+  filas.forEach(f => {
+    const label = f.querySelector(".cLabel").value.trim();
+    const valor = f.querySelector(".cValor").value.trim();
+    if(valor){
+      const { tipo, id } = parseVideoInput(valor);
+      out.push({ label: label || "Capítulo", tipo, id });
+    }
+  });
+  return out;
+}
+
+let editandoSlugSerie = null;
+const formMsgSerie = document.getElementById("formMsgSerie");
+
+function limpiarFormularioSerie(){
+  document.getElementById("sTitulo").value = "";
+  document.getElementById("sSlug").value = "";
+  document.getElementById("sSlug").readOnly = false;
+  document.getElementById("capitulosList").innerHTML = "";
+  document.getElementById("formTituloSerie").textContent = "Nueva serie";
+  document.getElementById("btnCancelarSerie").style.display = "none";
+  formMsgSerie.textContent = "";
+  editandoSlugSerie = null;
+}
+
+document.getElementById("btnCancelarSerie").addEventListener("click", limpiarFormularioSerie);
+
+document.getElementById("btnGuardarSerie").addEventListener("click", async () => {
+  formMsgSerie.className = "msg";
+  formMsgSerie.textContent = "";
+
+  const titulo = document.getElementById("sTitulo").value.trim();
+  const slug = slugify(document.getElementById("sSlug").value.trim());
+  const capitulos = leerCapitulos();
+
+  if(!titulo || !slug){
+    formMsgSerie.className = "msg error";
+    formMsgSerie.textContent = "Poné al menos un título (el slug se genera solo).";
+    return;
+  }
+  if(capitulos.length === 0){
+    formMsgSerie.className = "msg error";
+    formMsgSerie.textContent = "Agregá al menos un capítulo con su link.";
+    return;
+  }
+
+  try{
+    if(!editandoSlugSerie){
+      const existente = await get(ref(db, "paginasSeries/" + slug));
+      if(existente.exists()){
+        formMsgSerie.className = "msg error";
+        formMsgSerie.textContent = "Ya existe una serie con ese slug. Cambiá el título o el slug.";
+        return;
+      }
+    }
+    await set(ref(db, "paginasSeries/" + slug), { titulo, capitulos });
+    formMsgSerie.className = "msg ok";
+    formMsgSerie.textContent = "¡Serie guardada! Link: serie.html?slug=" + slug;
+    limpiarFormularioSerie();
+    cargarListaSeries();
+  }catch(err){
+    console.error(err);
+    formMsgSerie.className = "msg error";
+    formMsgSerie.textContent = "Error al guardar los datos.";
+  }
+});
+
+async function cargarListaSeries(){
+  const cont = document.getElementById("listaSeries");
+  cont.innerHTML = "Cargando...";
+  try{
+    const snap = await get(ref(db, "paginasSeries"));
+    const data = snap.val() || {};
+    const slugs = Object.keys(data);
+    if(slugs.length === 0){
+      cont.innerHTML = "<p>No hay series creadas todavía.</p>";
+      return;
+    }
+    cont.innerHTML = "";
+    slugs.forEach(slug => {
+      const s = data[slug];
+      const link = `${location.origin}${location.pathname.replace("admin.html","serie.html")}?slug=${slug}`;
+      const item = document.createElement("div");
+      item.className = "pagina-item";
+      item.innerHTML = `
+        <div class="pagina-info">
+          <div class="titulo">${s.titulo || slug} <small style="display:inline;">(${(s.capitulos||[]).length} capítulos)</small></div>
+          <div class="link">${link}</div>
+        </div>
+        <div>
+          <button class="btn-secondary" type="button" data-accion="copiar">Copiar link</button>
+          <button class="btn-secondary" type="button" data-accion="editar">Editar</button>
+          <button class="btn-danger" type="button" data-accion="eliminar">Eliminar</button>
+        </div>`;
+      item.querySelector('[data-accion="copiar"]').addEventListener("click", () => navigator.clipboard.writeText(link));
+      item.querySelector('[data-accion="editar"]').addEventListener("click", () => cargarSerieParaEditar(slug, s));
+      item.querySelector('[data-accion="eliminar"]').addEventListener("click", () => eliminarSerie(slug));
+      cont.appendChild(item);
+    });
+  }catch(err){
+    console.error(err);
+    cont.innerHTML = "<p>Error al cargar las series.</p>";
+  }
+}
+
+function cargarSerieParaEditar(slug, s){
+  editandoSlugSerie = slug;
+  document.getElementById("formTituloSerie").textContent = "Editando: " + (s.titulo || slug);
+  document.getElementById("sTitulo").value = s.titulo || "";
+  document.getElementById("sSlug").value = slug;
+  document.getElementById("sSlug").readOnly = true;
+
+  document.getElementById("capitulosList").innerHTML = "";
+  (s.capitulos || []).forEach(cap => {
+    // Reconstruimos un link "de referencia" para mostrarlo en el input al editar
+    const valorMostrado = cap.tipo === "youtube"
+      ? `https://youtu.be/${cap.id}`
+      : `https://drive.google.com/file/d/${cap.id}/view`;
+    crearFilaCapitulo(cap.label, valorMostrado);
+  });
+
+  document.getElementById("btnCancelarSerie").style.display = "inline-block";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+async function eliminarSerie(slug){
+  if(!confirm("¿Seguro que querés eliminar esta serie? No se puede deshacer.")) return;
+  try{
+    await remove(ref(db, "paginasSeries/" + slug));
+    cargarListaSeries();
+  }catch(err){
+    console.error(err);
+    alert("Error al eliminar la serie.");
   }
 }
 </script>
