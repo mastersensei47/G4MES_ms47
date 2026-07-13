@@ -4,50 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MS47</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*{ margin:0; padding:0; box-sizing:border-box; font-family:'Inter', 'Segoe UI', Arial, sans-serif; }
-body{ background:#0a0a0a; color:white; overflow-x:hidden; }
-h1{ font-family:'Poppins',Arial,sans-serif; }
+:root{
+  --bg:#0a0a0b; --card:#151517; --card2:#1b1b1e; --line:#262629;
+  --accent:#ff2b3d; --accent2:#00e5c7; --text:#f2f2f2; --muted:#9a9aa0;
+}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Inter', Arial, sans-serif; }
+body{ background:var(--bg); color:var(--text); overflow-x:hidden; }
+h1,h2{ font-family:'Poppins',Arial,sans-serif; }
 
 /* ===== NAVBAR ===== */
-.navbar{ width:100%; background:#111; position:fixed; top:0; left:0; z-index:1000; border-bottom:2px solid #ff0000; }
+.navbar{ width:100%; background:rgba(10,10,11,0.8); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); position:fixed; top:0; left:0; z-index:1000; border-bottom:1px solid var(--line); }
 .nav-container{ max-width:1400px; margin:auto; display:flex; flex-direction:column; align-items:center; padding:10px; }
-.logo{ font-size:22px; font-weight:bold; color:#fff; text-shadow:0 0 10px #ff0000; text-decoration:none; margin-bottom:8px; font-family:'Poppins',sans-serif; }
-.nav-links{ display:flex; gap:8px; justify-content:center; width:100%; }
-.nav-links a{ color:#fff; text-decoration:none; background:#222; width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; border:1px solid #333; }
-.btn-jugar{ border-color:#00ff00 !important; }
+.logo{ font-size:22px; font-weight:800; color:#fff; text-shadow:0 0 12px rgba(255,43,61,0.6); text-decoration:none; margin-bottom:8px; letter-spacing:1px; }
+.nav-links{ display:flex; gap:8px; justify-content:center; width:100%; flex-wrap:wrap; }
+.nav-links a{ color:#fff; text-decoration:none; background:var(--card2); width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; border:1px solid var(--line); transition:0.2s; }
+.nav-links a:hover{ border-color:var(--accent); }
+.btn-jugar{ border-color:#00e676 !important; }
 
 @media(min-width:769px){
-  .nav-container{ flex-direction:row; padding:10px 20px; }
+  .nav-container{ flex-direction:row; padding:12px 20px; }
   .logo{ margin-bottom:0; margin-right:20px; }
   .nav-links{ width:auto; }
-  .nav-links a{ border-radius:8px; width:auto; height:auto; padding:8px 12px; font-size:14px; }
-  .nav-links a span{ display:inline; margin-left:5px; }
+  .nav-links a{ border-radius:20px; width:auto; height:auto; padding:8px 14px; font-size:13px; font-weight:600; }
+  .nav-links a span{ display:inline; margin-left:6px; }
 }
 
-/* ===== REPRODUCTOR ===== */
-main{ margin-top:130px; padding:10px; max-width:900px; margin-left:auto; margin-right:auto; }
+main{ margin-top:150px; padding:0 0 60px; max-width:1100px; margin-left:auto; margin-right:auto; }
 @media(min-width:769px){ main{ margin-top:80px; } }
+main.fade-in{ animation:fadeIn 0.5s ease; }
+@keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
 
-.reproductor-box{ background:#000; border-radius:10px; overflow:hidden; border:1px solid #333; box-shadow:0 0 20px rgba(255,0,0,0.3); margin-bottom:20px; }
+/* ===== FICHA ===== */
+.ficha{ position:relative; padding:36px 20px; margin-bottom:26px; overflow:hidden; }
+.ficha-fondo{ position:absolute; inset:0; background-size:cover; background-position:center; filter:blur(2px) brightness(0.5); transform:scale(1.05); z-index:0; }
+.ficha-fondo::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,10,11,0.3) 0%, var(--bg) 92%); }
+.ficha-contenido{ position:relative; z-index:1; display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end; max-width:1100px; margin:0 auto; padding:0 20px; }
+.ficha-poster{ width:150px; min-width:150px; border-radius:14px; overflow:hidden; box-shadow:0 12px 35px rgba(0,0,0,0.6); border:1px solid var(--line); }
+.ficha-poster img{ width:100%; display:block; aspect-ratio:2/3; object-fit:cover; }
+.ficha-info{ flex:1; min-width:220px; }
+.ficha-info h1{ font-size:28px; font-weight:800; text-shadow:0 2px 12px rgba(0,0,0,0.8); margin-bottom:10px; }
+.ficha-tags{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.tag{ background:var(--card2); border:1px solid var(--line); padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; color:#dcdce0; }
+.tag.tipo{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.ficha-sinopsis{ color:var(--muted); font-size:14px; line-height:1.6; max-width:700px; }
+
+/* ===== REPRODUCTOR ===== */
+.contenido-central{ padding:0 20px; max-width:900px; margin:0 auto; }
+.reproductor-box{ background:#000; border-radius:14px; overflow:hidden; border:1px solid var(--line); box-shadow:0 12px 35px rgba(255,43,61,0.15); margin-bottom:22px; }
 .video-container{ position:relative; padding-top:56.25%; background:#000; }
 .video-container iframe{ position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
 
-.info-capitulo{ padding:15px; background:#111; border-top:2px solid #ff0000; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-.info-capitulo h1{ font-size:16px; color:#fff; }
-.badge-tipo{ font-size:11px; padding:4px 10px; border-radius:20px; font-weight:bold; }
-.badge-tipo.youtube{ background:#ff0000; }
+.info-capitulo{ padding:14px 18px; background:var(--card); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.info-capitulo h2{ font-size:15px; color:#fff; font-weight:700; }
+.badge-tipo{ font-size:11px; padding:5px 12px; border-radius:20px; font-weight:700; letter-spacing:0.3px; }
+.badge-tipo.youtube{ background:var(--accent); }
 .badge-tipo.drive{ background:#1a73e8; }
 
-.grid-capitulos{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:15px; }
-.cap-btn{ background:#1b1b1b; border:1px solid #333; color:white; padding:12px 0; text-align:center; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px; transition:0.2s; }
-.cap-btn:hover{ background:#292929; }
-.cap-btn.active{ background:#ff0000; border-color:#fff; box-shadow:0 0 10px #ff0000; }
+.bloque-titulo{ display:flex; align-items:center; gap:10px; margin:6px 0 14px; }
+.bloque-titulo h2{ font-size:15px; font-weight:700; color:#fff; }
+.bloque-titulo .linea{ flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent); }
 
-@media(min-width:769px){ .grid-capitulos{ grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); } }
+.grid-capitulos{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.cap-btn{ background:var(--card2); border:1px solid var(--line); color:white; padding:13px 6px; text-align:center; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px; transition:0.2s; }
+.cap-btn:hover{ background:#232326; border-color:var(--accent2); }
+.cap-btn.active{ background:var(--accent); border-color:var(--accent); box-shadow:0 6px 18px rgba(255,43,61,0.4); }
 
-.estado-box{ text-align:center; margin-top:60px; color:#aaa; font-size:16px; }
+@media(min-width:769px){ .grid-capitulos{ grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); } }
+
+.estado-box{ text-align:center; margin-top:120px; color:var(--muted); font-size:16px; display:flex; flex-direction:column; align-items:center; gap:14px; }
+.spinner{ width:34px; height:34px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--accent); animation:girar 0.8s linear infinite; }
+@keyframes girar{ to{ transform:rotate(360deg); } }
+.estado-icono{ font-size:34px; }
 </style>
 </head>
 <body>
@@ -66,7 +97,10 @@ main{ margin-top:130px; padding:10px; max-width:900px; margin-left:auto; margin-
 </nav>
 
 <main id="main">
-  <p class="estado-box" id="estado">Cargando...</p>
+  <div class="estado-box" id="estado">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
 </main>
 
 <script type="module">
@@ -96,7 +130,6 @@ function construirSrc(cap, autoplay){
   if(cap.tipo === "youtube"){
     return `https://www.youtube.com/embed/${cap.id}?rel=0${autoplay ? "&autoplay=1" : ""}`;
   }
-  // drive
   return `https://drive.google.com/file/d/${cap.id}/preview?t=${Date.now()}`;
 }
 
@@ -116,9 +149,10 @@ window.cambiarCapitulo = function(index){
   badge.className = "badge-tipo " + (cap.tipo === "youtube" ? "youtube" : "drive");
 
   document.querySelectorAll(".cap-btn").forEach(btn => btn.classList.remove("active"));
-  document.getElementById("capbtn-" + index).classList.add("active");
+  const btn = document.getElementById("capbtn-" + index);
+  if(btn) btn.classList.add("active");
 
-  window.scrollTo({ top:0, behavior:"smooth" });
+  document.querySelector(".reproductor-box").scrollIntoView({ behavior:"smooth", block:"start" });
 };
 
 async function cargarSerie(){
@@ -127,14 +161,14 @@ async function cargarSerie(){
   const main = document.getElementById("main");
 
   if(!slug){
-    main.innerHTML = `<p class="estado-box">No se especificó ninguna serie (falta ?slug= en el link).</p>`;
+    main.innerHTML = `<div class="estado-box"><div class="estado-icono">🔗</div><p>No se especificó ninguna serie (falta ?slug= en el link).</p></div>`;
     return;
   }
 
   try{
     const snap = await get(ref(db, "paginasSeries/" + slug));
     if(!snap.exists()){
-      main.innerHTML = `<p class="estado-box">Esta serie no existe o fue eliminada.</p>`;
+      main.innerHTML = `<div class="estado-box"><div class="estado-icono">📺</div><p>Esta serie no existe o fue eliminada.</p></div>`;
       return;
     }
 
@@ -145,30 +179,59 @@ async function cargarSerie(){
     document.title = `${tituloSerie} - MS47`;
 
     if(capitulos.length === 0){
-      main.innerHTML = `<p class="estado-box">Esta serie todavía no tiene capítulos cargados.</p>`;
+      main.innerHTML = `<div class="estado-box"><div class="estado-icono">🎬</div><p>Todavía no hay capítulos cargados acá.</p></div>`;
       return;
     }
 
-    let botonesHtml = "";
-    capitulos.forEach((cap, i) => {
-      botonesHtml += `<div class="cap-btn${i===0 ? " active" : ""}" id="capbtn-${i}" onclick="cambiarCapitulo(${i})">${esc(cap.label)}</div>`;
-    });
+    const esPelicula = s.tipo === "pelicula" || capitulos.length === 1;
 
-    main.innerHTML = `
+    // ---- Ficha ----
+    let fichaHtml = `<section class="ficha">`;
+    if(s.fondo){
+      fichaHtml += `<div class="ficha-fondo" style="background-image:url('${s.fondo}')"></div>`;
+    }
+    fichaHtml += `<div class="ficha-contenido">`;
+    if(s.poster){
+      fichaHtml += `<div class="ficha-poster"><img src="${s.poster}" alt=""></div>`;
+    }
+    fichaHtml += `<div class="ficha-info">`;
+    fichaHtml += `<h1>${esc(tituloSerie)}</h1>`;
+    fichaHtml += `<div class="ficha-tags">`;
+    fichaHtml += `<span class="tag tipo">${esPelicula ? "🎬 Película" : "📺 Serie"}</span>`;
+    if(s.anio) fichaHtml += `<span class="tag">${esc(s.anio)}</span>`;
+    if(s.genero) fichaHtml += `<span class="tag">${esc(s.genero)}</span>`;
+    if(!esPelicula) fichaHtml += `<span class="tag">${capitulos.length} capítulos</span>`;
+    fichaHtml += `</div>`;
+    if(s.sinopsis) fichaHtml += `<p class="ficha-sinopsis">${esc(s.sinopsis)}</p>`;
+    fichaHtml += `</div></div></section>`;
+
+    // ---- Reproductor ----
+    let cuerpoHtml = `<div class="contenido-central">`;
+    cuerpoHtml += `
       <section class="reproductor-box">
         <div class="video-container">
           <iframe id="video-player" src="${construirSrc(capitulos[0], false)}" allowfullscreen></iframe>
         </div>
         <div class="info-capitulo">
-          <h1 id="titulo-display">${esc(tituloSerie)} - ${esc(capitulos[0].label)}</h1>
+          <h2 id="titulo-display">${esc(tituloSerie)}${esPelicula ? "" : " - " + esc(capitulos[0].label)}</h2>
           <span class="badge-tipo ${capitulos[0].tipo === "youtube" ? "youtube" : "drive"}" id="badge-tipo">${capitulos[0].tipo === "youtube" ? "YouTube" : "Drive"}</span>
         </div>
-      </section>
-      <div class="grid-capitulos">${botonesHtml}</div>
-    `;
+      </section>`;
+
+    if(!esPelicula){
+      let botonesHtml = "";
+      capitulos.forEach((cap, i) => {
+        botonesHtml += `<div class="cap-btn${i===0 ? " active" : ""}" id="capbtn-${i}" onclick="cambiarCapitulo(${i})">${esc(cap.label)}</div>`;
+      });
+      cuerpoHtml += `<div class="bloque-titulo"><h2>Capítulos</h2><div class="linea"></div></div><div class="grid-capitulos">${botonesHtml}</div>`;
+    }
+    cuerpoHtml += `</div>`;
+
+    main.innerHTML = fichaHtml + cuerpoHtml;
+    main.classList.add("fade-in");
   }catch(err){
     console.error(err);
-    main.innerHTML = `<p class="estado-box">Ocurrió un error al cargar la serie.</p>`;
+    main.innerHTML = `<div class="estado-box"><div class="estado-icono">⚠️</div><p>Ocurrió un error al cargar la serie.</p></div>`;
   }
 }
 
