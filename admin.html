@@ -158,7 +158,7 @@ small{color:#888;display:block;margin-top:4px;}
     <textarea id="sSinopsis" placeholder="De qué trata..."></textarea>
 
     <label>Capítulos</label>
-    <p class="hint">Pegá el link normal de YouTube (podés usar videos "no listados", funcionan igual) o el link para compartir de Google Drive. Se detecta solo cuál es cuál. Si es una película, cargá un solo capítulo.</p>
+    <p class="hint">Pegá el link normal de YouTube (podés usar videos "no listados", funcionan igual), el link para compartir de Google Drive, o un link directo a un video (.mp4/.webm, como los trailers de Steam). Se detecta solo cuál es cuál. Si es una película, cargá un solo capítulo.</p>
     <div id="capitulosList"></div>
     <button class="btn-secondary" id="btnAddCapitulo" type="button">+ Agregar capítulo</button>
 
@@ -441,7 +441,7 @@ document.getElementById("sTitulo").addEventListener("input", (e) => {
   if(!slugInput.readOnly) slugInput.value = slugify(e.target.value);
 });
 
-// Detecta si el link pegado es de YouTube o de Google Drive y saca el ID limpio
+// Detecta si el link pegado es de YouTube, Google Drive o un video directo (.mp4/.webm/etc) y saca el ID/URL limpio
 function parseVideoInput(valor){
   valor = (valor || "").trim();
   if(/youtu\.be|youtube\.com/i.test(valor)){
@@ -458,6 +458,10 @@ function parseVideoInput(valor){
   if(/drive\.google\.com/i.test(valor)){
     const m = valor.match(/\/d\/([a-zA-Z0-9_-]+)/);
     return { tipo: "drive", id: m ? m[1] : valor };
+  }
+  // Link directo a un archivo de video (trailers de Steam, mp4/webm propios, etc.)
+  if(/^https?:\/\//i.test(valor) && /\.(mp4|webm|ogg|ogv|mov|m3u8)(\?.*)?$/i.test(valor)){
+    return { tipo: "archivo", id: valor };
   }
   // Sin dominio reconocido: si parece un ID de YouTube (11 caracteres), lo tratamos como tal
   if(/^[a-zA-Z0-9_-]{11}$/.test(valor)) return { tipo: "youtube", id: valor };
@@ -618,9 +622,10 @@ function cargarSerieParaEditar(slug, s){
   document.getElementById("capitulosList").innerHTML = "";
   (s.capitulos || []).forEach(cap => {
     // Reconstruimos un link "de referencia" para mostrarlo en el input al editar
-    const valorMostrado = cap.tipo === "youtube"
-      ? `https://youtu.be/${cap.id}`
-      : `https://drive.google.com/file/d/${cap.id}/view`;
+    let valorMostrado;
+    if(cap.tipo === "youtube") valorMostrado = `https://youtu.be/${cap.id}`;
+    else if(cap.tipo === "archivo") valorMostrado = cap.id;
+    else valorMostrado = `https://drive.google.com/file/d/${cap.id}/view`;
     crearFilaCapitulo(cap.label, valorMostrado);
   });
 
