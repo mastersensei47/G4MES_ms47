@@ -43,12 +43,12 @@ main.fade-in{animation:fadeIn 0.5s ease;}
 .hero.con-fondo::before{background:linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(6,6,7,0.92) 100%);}
 .hero > *{position:relative;z-index:1;}
 .video{flex:1;min-width:280px;}
-.video iframe{width:100%;height:250px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.55);border:1px solid var(--line);}
+.video iframe,.video video{width:100%;height:250px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.55);border:1px solid var(--line);background:#000;}
 .titulo{flex:1.2;text-align:center;min-width:260px;}
 .titulo h1{font-size:32px;font-weight:800;margin-top:12px;margin-bottom:4px;text-shadow:0 2px 12px rgba(0,0,0,0.8);letter-spacing:0.3px;}
 .titulo .barra{width:60px;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;margin:14px auto 0;}
 .video-centro{margin-bottom:16px;display:flex;justify-content:center;}
-.video-centro iframe{width:100%;max-width:400px;height:220px;border-radius:16px;box-shadow:0 0 30px rgba(255,43,61,0.35);border:1px solid var(--line);}
+.video-centro iframe,.video-centro video{width:100%;max-width:400px;height:220px;border-radius:16px;box-shadow:0 0 30px rgba(255,43,61,0.35);border:1px solid var(--line);background:#000;}
 
 /* ---------- DESCARGAS ---------- */
 .bloque-titulo{display:flex;align-items:center;gap:10px;margin:8px 0 16px;}
@@ -70,6 +70,7 @@ main.fade-in{animation:fadeIn 0.5s ease;}
 .acordeon-content ul{list-style:none;padding:16px;}
 .acordeon-content ul li{background:var(--card2);margin-bottom:7px;padding:10px 12px;border-radius:8px;font-size:14px;border-left:3px solid var(--accent2);}
 .acordeon-content iframe{display:block;}
+.verif-media{width:100%;height:450px;border:none;background:#000;display:block;}
 
 /* ---------- DETALLES ---------- */
 .seccion-detalles{background:var(--card);padding:26px;border-radius:16px;margin-top:26px;border:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:30px;}
@@ -156,6 +157,33 @@ function toEmbedUrl(url){
   return `https://www.youtube.com/embed/${id}`;
 }
 
+function detectarTipoVideo(url){
+  if(!url) return null;
+  url = url.trim();
+  if(/youtu\.be|youtube\.com/i.test(url)) return "youtube";
+  if(/drive\.google\.com/i.test(url)) return "drive";
+  if(/\.(mp4|webm|ogg|ogv|mov|m3u8)(\?.*)?$/i.test(url)) return "archivo";
+  return "youtube";
+}
+
+function extraerDriveId(url){
+  const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : url;
+}
+
+// Arma el <video> o <iframe> segun sea un link de YouTube, Drive, o un archivo directo (.mp4/.webm/etc)
+function renderVideo(url, claseExtra=""){
+  const tipo = detectarTipoVideo(url);
+  if(!tipo) return "";
+  if(tipo === "archivo"){
+    return `<video class="${claseExtra}" src="${url}" controls playsinline></video>`;
+  }
+  if(tipo === "drive"){
+    return `<iframe class="${claseExtra}" src="https://drive.google.com/file/d/${extraerDriveId(url)}/preview" allowfullscreen></iframe>`;
+  }
+  return `<iframe class="${claseExtra}" src="${toEmbedUrl(url)}" allowfullscreen></iframe>`;
+}
+
 function esc(str){
   const div = document.createElement("div");
   div.innerText = str || "";
@@ -201,11 +229,11 @@ async function cargarPagina(){
     const heroClass = d.fondo ? "hero con-fondo" : "hero";
 
     let heroHtml = `<section class="${heroClass}" ${heroStyle}>`;
-    heroHtml += d.videoIzq ? `<div class="video"><iframe src="${toEmbedUrl(d.videoIzq)}" allowfullscreen></iframe></div>` : "";
+    heroHtml += d.videoIzq ? `<div class="video">${renderVideo(d.videoIzq)}</div>` : "";
     heroHtml += `<div class="titulo">`;
-    heroHtml += d.videoCentro ? `<div class="video-centro"><iframe src="${toEmbedUrl(d.videoCentro)}" allowfullscreen></iframe></div>` : "";
+    heroHtml += d.videoCentro ? `<div class="video-centro">${renderVideo(d.videoCentro)}</div>` : "";
     heroHtml += `<h1>${esc(d.titulo)}</h1><div class="barra"></div></div>`;
-    heroHtml += d.videoDer ? `<div class="video"><iframe src="${toEmbedUrl(d.videoDer)}" allowfullscreen></iframe></div>` : "";
+    heroHtml += d.videoDer ? `<div class="video">${renderVideo(d.videoDer)}</div>` : "";
     heroHtml += `</section>`;
 
     const descargas = (d.descargas || []).filter(x => x && x.url);
@@ -221,7 +249,7 @@ async function cargarPagina(){
       verificacionHtml = `
         <div class="acordeon">
           <div class="acordeon-header" onclick="toggleAcordeon(this)">🎞️ Verificación <span>▼</span></div>
-          <div class="acordeon-content"><iframe src="${d.verificacion}" width="100%" height="450" style="border:none;"></iframe></div>
+          <div class="acordeon-content">${renderVideo(d.verificacion, "verif-media")}</div>
         </div>`;
     }
 
