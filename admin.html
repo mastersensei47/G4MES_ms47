@@ -79,12 +79,13 @@ small{color:#888;display:block;margin-top:4px;}
     <label>Imagen de fondo del hero (URL, opcional)</label>
     <input type="text" id="fFondo" placeholder="https://...">
 
-    <label>Video izquierdo (link normal de YouTube, opcional)</label>
+    <label>Video izquierdo (link de YouTube, Drive o archivo .mp4/.webm, opcional)</label>
     <input type="text" id="fVideoIzq">
     <label>Video centro (opcional)</label>
     <input type="text" id="fVideoCentro">
     <label>Video derecho (opcional)</label>
     <input type="text" id="fVideoDer">
+    <p class="hint">Se detecta solo si es YouTube, Google Drive o un video directo (trailers de Steam, .mp4, .webm, etc).</p>
 
     <label>Título de la sección de descargas</label>
     <input type="text" id="fPeso" placeholder="Ej: DESCOMPRIMIDO (90GB) solo la parte 1 tiene acortador">
@@ -93,8 +94,8 @@ small{color:#888;display:block;margin-top:4px;}
     <div id="descargasList"></div>
     <button class="btn-secondary" id="btnAddDescarga" type="button">+ Agregar link</button>
 
-    <label>Link de verificación (video de Drive/YouTube embebido, opcional)</label>
-    <input type="text" id="fVerificacion" placeholder="https://drive.google.com/file/d/.../preview">
+    <label>Link de verificación (YouTube, Drive o video directo, opcional)</label>
+    <input type="text" id="fVerificacion" placeholder="https://drive.google.com/file/d/.../view">
 
     <label>Contenido / DLCs (una línea por ítem, opcional)</label>
     <div id="contenidoList"></div>
