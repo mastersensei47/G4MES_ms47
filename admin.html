@@ -76,16 +76,61 @@ small{color:#888;display:block;margin-top:4px;}
     <label>Slug (parte del link, se genera solo)</label>
     <input type="text" id="fSlug" placeholder="ej-god-of-war-ragnarok">
 
-    <label>Imagen de fondo del hero (URL, opcional)</label>
-    <input type="text" id="fFondo" placeholder="https://...">
+    <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;">
+      <label style="margin-top:0;">Imagen de fondo del hero (opcional)</label>
+      <input type="text" id="fFondo" placeholder="https://...">
+      <label>Video de fondo (opcional, YouTube, Drive o .mp4/.webm)</label>
+      <input type="text" id="fFondoVideo" placeholder="https://...">
+      <label>Modo</label>
+      <select id="fFondoModo" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+        <option value="hover">Hover (imagen, video al pasar el mouse)</option>
+        <option value="rotativo">Rotativo (alternan solos)</option>
+        <option value="video">Solo video (sin imagen)</option>
+      </select>
+      <p class="hint">Si solo cargás la imagen o solo el video, se usa eso nomás. Si cargás los dos, se aplica el modo elegido.</p>
+    </div>
 
-    <label>Video izquierdo (link de YouTube, Drive o archivo .mp4/.webm, opcional)</label>
-    <input type="text" id="fVideoIzq">
-    <label>Video centro (opcional)</label>
-    <input type="text" id="fVideoCentro">
-    <label>Video derecho (opcional)</label>
-    <input type="text" id="fVideoDer">
-    <p class="hint">Se detecta solo si es YouTube, Google Drive o un video directo (trailers de Steam, .mp4, .webm, etc).</p>
+    <label>Videos del hero</label>
+    <p class="hint">Para cada posición podés poner solo un video, o un video + una imagen: en modo "Hover" se ve la imagen y el video se reproduce al pasar el mouse por encima; en modo "Rotativo" van alternando solos cada pocos segundos, sin necesidad de tocar nada.</p>
+
+    <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-top:10px;">
+      <label style="margin-top:0;">Video izquierdo (YouTube, Drive o .mp4/.webm)</label>
+      <input type="text" id="fVideoIzq">
+      <label>Imagen izquierda (opcional, para hover/rotativo)</label>
+      <input type="text" id="fImagenIzq" placeholder="https://...">
+      <label>Modo</label>
+      <select id="fModoIzq" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+        <option value="hover">Hover (imagen, video al pasar el mouse)</option>
+        <option value="rotativo">Rotativo (alternan solos)</option>
+        <option value="video">Solo video (sin imagen)</option>
+      </select>
+    </div>
+
+    <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-top:10px;">
+      <label style="margin-top:0;">Video centro (opcional)</label>
+      <input type="text" id="fVideoCentro">
+      <label>Imagen centro (opcional, para hover/rotativo)</label>
+      <input type="text" id="fImagenCentro" placeholder="https://...">
+      <label>Modo</label>
+      <select id="fModoCentro" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+        <option value="hover">Hover (imagen, video al pasar el mouse)</option>
+        <option value="rotativo">Rotativo (alternan solos)</option>
+        <option value="video">Solo video (sin imagen)</option>
+      </select>
+    </div>
+
+    <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-top:10px;">
+      <label style="margin-top:0;">Video derecho (opcional)</label>
+      <input type="text" id="fVideoDer">
+      <label>Imagen derecha (opcional, para hover/rotativo)</label>
+      <input type="text" id="fImagenDer" placeholder="https://...">
+      <label>Modo</label>
+      <select id="fModoDer" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+        <option value="hover">Hover (imagen, video al pasar el mouse)</option>
+        <option value="rotativo">Rotativo (alternan solos)</option>
+        <option value="video">Solo video (sin imagen)</option>
+      </select>
+    </div>
 
     <label>Título de la sección de descargas</label>
     <input type="text" id="fPeso" placeholder="Ej: DESCOMPRIMIDO (90GB) solo la parte 1 tiene acortador">
@@ -294,7 +339,8 @@ document.getElementById("fTitulo").addEventListener("input", (e) => {
 let editandoSlug = null;
 
 function limpiarFormulario(){
-  ["fTitulo","fSlug","fFondo","fVideoIzq","fVideoCentro","fVideoDer","fPeso","fVerificacion"].forEach(id => document.getElementById(id).value = "");
+  ["fTitulo","fSlug","fFondo","fFondoVideo","fVideoIzq","fVideoCentro","fVideoDer","fImagenIzq","fImagenCentro","fImagenDer","fPeso","fVerificacion"].forEach(id => document.getElementById(id).value = "");
+  ["fModoIzq","fModoCentro","fModoDer","fFondoModo"].forEach(id => document.getElementById(id).value = "hover");
   document.getElementById("fSlug").readOnly = false;
   ["descargasList","contenidoList","requisitosList","infoJuegoList","galeriaList"].forEach(id => document.getElementById(id).innerHTML = "");
   document.getElementById("formTitulo").textContent = "Nueva página";
@@ -321,9 +367,17 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
   const data = {
     titulo,
     fondo: document.getElementById("fFondo").value.trim(),
+    fondoVideo: document.getElementById("fFondoVideo").value.trim(),
+    fondoModo: document.getElementById("fFondoModo").value,
     videoIzq: document.getElementById("fVideoIzq").value.trim(),
+    imagenIzq: document.getElementById("fImagenIzq").value.trim(),
+    modoIzq: document.getElementById("fModoIzq").value,
     videoCentro: document.getElementById("fVideoCentro").value.trim(),
+    imagenCentro: document.getElementById("fImagenCentro").value.trim(),
+    modoCentro: document.getElementById("fModoCentro").value,
     videoDer: document.getElementById("fVideoDer").value.trim(),
+    imagenDer: document.getElementById("fImagenDer").value.trim(),
+    modoDer: document.getElementById("fModoDer").value,
     pesoTitulo: document.getElementById("fPeso").value.trim(),
     descargas: leerDescargas(),
     verificacion: document.getElementById("fVerificacion").value.trim(),
@@ -399,9 +453,17 @@ function cargarParaEditar(slug, d){
   document.getElementById("fSlug").value = slug;
   document.getElementById("fSlug").readOnly = true;
   document.getElementById("fFondo").value = d.fondo || "";
+  document.getElementById("fFondoVideo").value = d.fondoVideo || "";
+  document.getElementById("fFondoModo").value = d.fondoModo || "hover";
   document.getElementById("fVideoIzq").value = d.videoIzq || "";
+  document.getElementById("fImagenIzq").value = d.imagenIzq || "";
+  document.getElementById("fModoIzq").value = d.modoIzq || "hover";
   document.getElementById("fVideoCentro").value = d.videoCentro || "";
+  document.getElementById("fImagenCentro").value = d.imagenCentro || "";
+  document.getElementById("fModoCentro").value = d.modoCentro || "hover";
   document.getElementById("fVideoDer").value = d.videoDer || "";
+  document.getElementById("fImagenDer").value = d.imagenDer || "";
+  document.getElementById("fModoDer").value = d.modoDer || "hover";
   document.getElementById("fPeso").value = d.pesoTitulo || "";
   document.getElementById("fVerificacion").value = d.verificacion || "";
 
