@@ -222,7 +222,8 @@ function renderMediaSlot(video, imagen, modo){
     return `<img src="${imagen}">`;
   }
   if(!imagen || modo === "video"){
-    return renderVideoTag(video, true);
+    // Video suelto: se comporta como un embed normal, no se reproduce solo
+    return renderVideo(video);
   }
   const modoClase = modo === "rotativo" ? "modo-rotativo" : "modo-hover";
   return `
