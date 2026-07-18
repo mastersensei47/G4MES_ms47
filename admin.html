@@ -19,6 +19,7 @@ h2{font-family:'Poppins',Arial,sans-serif;font-weight:600;margin:26px 0 14px;fon
 h2::before{content:"";display:block;width:4px;height:18px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:3px;flex-shrink:0;}
 
 .card{background:var(--card);border-radius:14px;padding:22px;max-width:750px;margin:0 auto 20px;border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+.card-ancha{max-width:960px;}
 
 label{display:block;margin-top:14px;margin-bottom:6px;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0.2px;}
 
@@ -76,6 +77,8 @@ small{color:var(--muted);display:block;margin-top:4px;font-size:12px;}
 .grupo-media + .grupo-media{margin-top:10px;}
 
 details.seccion{background:var(--card2);border:1px solid var(--line);border-radius:12px;margin-top:16px;overflow:hidden;}
+.grid-secciones{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start;margin-top:16px;}
+.grid-secciones details.seccion{margin-top:0;}
 details.seccion summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;justify-content:space-between;user-select:none;font-family:'Poppins',Arial,sans-serif;}
 details.seccion summary::-webkit-details-marker{display:none;}
 details.seccion summary::after{content:"▾";color:var(--muted);transition:transform 0.2s;font-size:13px;}
@@ -118,7 +121,7 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
 
   <div id="tabJuegos">
 
-  <div class="card">
+  <div class="card card-ancha">
     <h2 id="formTitulo">Nueva página</h2>
 
     <label>Título del juego</label>
@@ -126,6 +129,8 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
 
     <label>Slug (parte del link, se genera solo)</label>
     <input type="text" id="fSlug" placeholder="ej-god-of-war-ragnarok">
+
+    <div class="grid-secciones">
 
     <details class="seccion" id="secFondo">
       <summary>🖼️ Fondo del hero</summary>
@@ -236,6 +241,8 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
       </div>
     </details>
 
+    </div><!-- /grid-secciones -->
+
     <div>
       <button class="btn-primary" id="btnGuardar" type="button">Guardar página</button>
       <button class="btn-secondary" id="btnCancelar" type="button" style="display:none;">Cancelar edición</button>
@@ -250,7 +257,7 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
 
   <div id="tabSeries" style="display:none;">
 
-  <div class="card">
+  <div class="card card-ancha">
     <h2 id="formTituloSerie">Nueva serie</h2>
 
     <label>Título de la serie</label>
@@ -264,6 +271,8 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
       <option value="serie">Serie (varios capítulos)</option>
       <option value="pelicula">Película (un solo video)</option>
     </select>
+
+    <div class="grid-secciones">
 
     <details class="seccion" id="secFicha">
       <summary>🖼️ Ficha (poster, fondo, sinopsis)</summary>
@@ -294,6 +303,8 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
         <button class="btn-secondary" id="btnAddCapitulo" type="button">+ Agregar capítulo</button>
       </div>
     </details>
+
+    </div><!-- /grid-secciones -->
 
     <div>
       <button class="btn-primary" id="btnGuardarSerie" type="button">Guardar serie</button>
