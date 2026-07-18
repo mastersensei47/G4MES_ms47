@@ -4,42 +4,75 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel Admin - MS47</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial, sans-serif;}
-body{background:#0e0e0e;color:white;padding:20px;}
-h1{margin-bottom:20px;}
-h2{margin:25px 0 10px;}
-.card{background:#1b1b1b;border-radius:10px;padding:20px;max-width:750px;margin:0 auto 20px;border:1px solid #333;}
-label{display:block;margin-top:14px;margin-bottom:4px;font-size:14px;color:#ccc;}
-input[type=text], input[type=password], textarea{
-  width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;
+:root{
+  --bg:#0a0a0b; --card:#141416; --card2:#1a1a1d; --line:#26262a;
+  --accent:#ff2b3d; --accent2:#00e5c7; --text:#f2f2f2; --muted:#9a9aa0;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',Arial,sans-serif;}
+body{background:var(--bg);color:var(--text);padding:26px 16px 60px;}
+h1{font-family:'Poppins',Arial,sans-serif;font-weight:700;}
+h2{font-family:'Poppins',Arial,sans-serif;font-weight:600;margin:26px 0 14px;font-size:17px;display:flex;align-items:center;gap:10px;}
+h2::before{content:"";display:block;width:4px;height:18px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:3px;flex-shrink:0;}
+
+.card{background:var(--card);border-radius:14px;padding:22px;max-width:750px;margin:0 auto 20px;border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+
+label{display:block;margin-top:14px;margin-bottom:6px;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0.2px;}
+
+input[type=text],input[type=password],textarea,select{
+  width:100%;padding:11px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:14px;transition:border-color 0.2s, box-shadow 0.2s;
+}
+input[type=text]::placeholder,input[type=password]::placeholder,textarea::placeholder{color:#6a6a70;}
+input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{
+  outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,43,61,0.15);
 }
 textarea{min-height:70px;resize:vertical;}
-button{cursor:pointer;border:none;border-radius:6px;padding:10px 16px;font-weight:bold;margin-top:10px;margin-right:8px;}
-.btn-primary{background:#ff0000;color:white;}
-.btn-primary:hover{background:#c70000;}
-.btn-secondary{background:#333;color:white;}
-.btn-secondary:hover{background:#444;}
-.btn-danger{background:#550000;color:white;}
-.btn-danger:hover{background:#800000;}
+
+button{cursor:pointer;border:none;border-radius:8px;padding:11px 18px;font-weight:700;margin-top:10px;margin-right:8px;font-size:14px;transition:transform 0.15s, box-shadow 0.15s, background 0.2s, color 0.2s;}
+button:active{transform:scale(0.97);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#c4142a);color:white;box-shadow:0 6px 18px rgba(255,43,61,0.3);}
+.btn-primary:hover{box-shadow:0 8px 22px rgba(255,43,61,0.45);transform:translateY(-1px);}
+.btn-secondary{background:var(--card2);color:var(--text);border:1px solid var(--line);}
+.btn-secondary:hover{background:#232327;border-color:#3a3a40;}
+.btn-danger{background:rgba(255,43,61,0.12);color:#ff9aa2;border:1px solid rgba(255,43,61,0.3);}
+.btn-danger:hover{background:rgba(255,43,61,0.22);color:#ffb3ba;}
+
 .fila{display:flex;gap:8px;margin-top:8px;align-items:center;}
 .fila input{flex:1;}
-.fila button{margin:0;padding:8px 10px;}
+.fila button{margin:0;padding:9px 12px;}
+
 #panel{display:none;max-width:950px;margin:0 auto;}
-#login{max-width:350px;margin:100px auto;text-align:center;}
-.pagina-item{background:#1b1b1b;border-radius:8px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border:1px solid #333;}
+#login{max-width:360px;margin:110px auto;text-align:center;}
+#login h1{font-size:22px;margin-bottom:22px;}
+#login .card{padding:28px 24px;}
+#login button.btn-primary{width:100%;}
+
+.pagina-item{background:var(--card);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border:1px solid var(--line);transition:border-color 0.2s;}
+.pagina-item:hover{border-color:#3a3a40;}
 .pagina-info{flex:1;min-width:200px;}
-.pagina-info .titulo{font-weight:bold;}
-.pagina-info .link{font-size:12px;color:#7fd0ff;word-break:break-all;}
-.topbar{display:flex;justify-content:space-between;align-items:center;max-width:950px;margin:0 auto 10px;}
-.msg{margin-top:10px;font-size:14px;}
-.msg.error{color:#ff6b6b;}
-.msg.ok{color:#6bff8f;}
-small{color:#888;display:block;margin-top:4px;}
+.pagina-info .titulo{font-weight:700;font-size:15px;}
+.pagina-info .link{font-size:12px;color:var(--accent2);word-break:break-all;margin-top:4px;}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;max-width:950px;margin:0 auto 18px;flex-wrap:wrap;gap:10px;}
+.topbar h1{font-size:20px;}
+
+.msg{margin-top:12px;font-size:13px;}
+.msg:not(:empty){padding:10px 12px;border-radius:8px;}
+.msg.error{color:#ff8a93;background:rgba(255,43,61,0.1);}
+.msg.ok{color:#6bffb0;background:rgba(0,229,199,0.1);}
+
+small{color:var(--muted);display:block;margin-top:4px;font-size:12px;}
 .tabs{display:flex;gap:10px;max-width:950px;margin:0 auto 20px;}
-.tab-btn{background:#1b1b1b;color:#aaa;border:1px solid #333;border-radius:8px;padding:10px 18px;font-weight:bold;cursor:pointer;}
-.tab-btn.active{background:#ff0000;color:white;border-color:#ff0000;}
-.hint{color:#888;font-size:12px;margin-top:4px;}
+.tab-btn{background:var(--card);color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:11px 20px;font-weight:700;cursor:pointer;font-size:14px;transition:0.2s;}
+.tab-btn:hover{color:var(--text);border-color:#3a3a40;}
+.tab-btn.active{background:linear-gradient(135deg,var(--accent),#c4142a);color:white;border-color:transparent;box-shadow:0 6px 18px rgba(255,43,61,0.3);}
+.hint{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.5;}
+
+.grupo-media{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:12px;}
+.grupo-media label:first-of-type{margin-top:0;}
 </style>
 </head>
 <body>
@@ -49,7 +82,7 @@ small{color:#888;display:block;margin-top:4px;}
   <div class="card">
     <label>Clave de acceso</label>
     <input type="password" id="loginPass" placeholder="Ingresá la clave">
-    <button class="btn-primary" id="btnLogin" style="width:100%;">Entrar</button>
+    <button class="btn-primary" id="btnLogin">Entrar</button>
     <p class="msg error" id="loginMsg"></p>
   </div>
 </div>
@@ -76,13 +109,13 @@ small{color:#888;display:block;margin-top:4px;}
     <label>Slug (parte del link, se genera solo)</label>
     <input type="text" id="fSlug" placeholder="ej-god-of-war-ragnarok">
 
-    <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;">
-      <label style="margin-top:0;">Imagen de fondo del hero (opcional)</label>
+    <div class="grupo-media">
+      <label>Imagen de fondo del hero (opcional)</label>
       <input type="text" id="fFondo" placeholder="https://...">
       <label>Video de fondo (opcional, YouTube, Drive o .mp4/.webm)</label>
       <input type="text" id="fFondoVideo" placeholder="https://...">
       <label>Modo</label>
-      <select id="fFondoModo" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+      <select id="fFondoModo">
         <option value="hover">Hover (imagen, video al pasar el mouse)</option>
         <option value="rotativo">Rotativo (alternan solos)</option>
         <option value="video">Solo video (sin imagen)</option>
@@ -93,39 +126,39 @@ small{color:#888;display:block;margin-top:4px;}
     <label>Videos del hero</label>
     <p class="hint">Para cada posición podés poner solo un video, o un video + una imagen: en modo "Hover" se ve la imagen y el video se reproduce al pasar el mouse por encima; en modo "Rotativo" van alternando solos cada pocos segundos, sin necesidad de tocar nada.</p>
 
-    <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-top:10px;">
-      <label style="margin-top:0;">Video izquierdo (YouTube, Drive o .mp4/.webm)</label>
+    <div class="grupo-media">
+      <label>Video izquierdo (YouTube, Drive o .mp4/.webm)</label>
       <input type="text" id="fVideoIzq">
       <label>Imagen izquierda (opcional, para hover/rotativo)</label>
       <input type="text" id="fImagenIzq" placeholder="https://...">
       <label>Modo</label>
-      <select id="fModoIzq" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+      <select id="fModoIzq">
         <option value="hover">Hover (imagen, video al pasar el mouse)</option>
         <option value="rotativo">Rotativo (alternan solos)</option>
         <option value="video">Solo video (sin imagen)</option>
       </select>
     </div>
 
-    <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-top:10px;">
-      <label style="margin-top:0;">Video centro (opcional)</label>
+    <div class="grupo-media">
+      <label>Video centro (opcional)</label>
       <input type="text" id="fVideoCentro">
       <label>Imagen centro (opcional, para hover/rotativo)</label>
       <input type="text" id="fImagenCentro" placeholder="https://...">
       <label>Modo</label>
-      <select id="fModoCentro" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+      <select id="fModoCentro">
         <option value="hover">Hover (imagen, video al pasar el mouse)</option>
         <option value="rotativo">Rotativo (alternan solos)</option>
         <option value="video">Solo video (sin imagen)</option>
       </select>
     </div>
 
-    <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-top:10px;">
-      <label style="margin-top:0;">Video derecho (opcional)</label>
+    <div class="grupo-media">
+      <label>Video derecho (opcional)</label>
       <input type="text" id="fVideoDer">
       <label>Imagen derecha (opcional, para hover/rotativo)</label>
       <input type="text" id="fImagenDer" placeholder="https://...">
       <label>Modo</label>
-      <select id="fModoDer" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+      <select id="fModoDer">
         <option value="hover">Hover (imagen, video al pasar el mouse)</option>
         <option value="rotativo">Rotativo (alternan solos)</option>
         <option value="video">Solo video (sin imagen)</option>
@@ -182,7 +215,7 @@ small{color:#888;display:block;margin-top:4px;}
     <input type="text" id="sSlug" placeholder="o11ce">
 
     <label>Tipo</label>
-    <select id="sTipoContenido" style="width:100%;padding:10px;border-radius:6px;border:1px solid #333;background:#111;color:white;font-size:14px;">
+    <select id="sTipoContenido">
       <option value="serie">Serie (varios capítulos)</option>
       <option value="pelicula">Película (un solo video)</option>
     </select>
