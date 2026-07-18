@@ -73,6 +73,24 @@ small{color:var(--muted);display:block;margin-top:4px;font-size:12px;}
 
 .grupo-media{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:12px;}
 .grupo-media label:first-of-type{margin-top:0;}
+.grupo-media + .grupo-media{margin-top:10px;}
+
+details.seccion{background:var(--card2);border:1px solid var(--line);border-radius:12px;margin-top:16px;overflow:hidden;}
+details.seccion summary{cursor:pointer;padding:14px 16px;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;justify-content:space-between;user-select:none;font-family:'Poppins',Arial,sans-serif;}
+details.seccion summary::-webkit-details-marker{display:none;}
+details.seccion summary::after{content:"▾";color:var(--muted);transition:transform 0.2s;font-size:13px;}
+details.seccion[open] summary{border-bottom:1px solid var(--line);}
+details.seccion[open] summary::after{transform:rotate(180deg);}
+details.seccion summary:hover{background:rgba(255,255,255,0.03);}
+details.seccion .contenido-seccion{padding:16px;}
+details.seccion .contenido-seccion > label:first-child{margin-top:0;}
+.subgrupo-titulo{font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:0.6px;margin-top:16px;margin-bottom:6px;}
+.subgrupo-titulo:first-child{margin-top:0;}
+
+a.btn-secondary,a.btn-primary,a.btn-danger{cursor:pointer;border-radius:8px;padding:11px 18px;font-weight:700;margin-top:10px;margin-right:8px;font-size:14px;display:inline-block;text-decoration:none;transition:transform 0.15s, box-shadow 0.15s, background 0.2s, color 0.2s;}
+a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(0.97);}
+
+.mini-thumb{width:54px;height:54px;object-fit:cover;border-radius:9px;border:1px solid var(--line);flex-shrink:0;background:var(--card2);}
 </style>
 </head>
 <body>
@@ -109,87 +127,114 @@ small{color:var(--muted);display:block;margin-top:4px;font-size:12px;}
     <label>Slug (parte del link, se genera solo)</label>
     <input type="text" id="fSlug" placeholder="ej-god-of-war-ragnarok">
 
-    <div class="grupo-media">
-      <label>Imagen de fondo del hero (opcional)</label>
-      <input type="text" id="fFondo" placeholder="https://...">
-      <label>Video de fondo (opcional, YouTube, Drive o .mp4/.webm)</label>
-      <input type="text" id="fFondoVideo" placeholder="https://...">
-      <label>Modo</label>
-      <select id="fFondoModo">
-        <option value="hover">Hover (imagen, video al pasar el mouse)</option>
-        <option value="rotativo">Rotativo (alternan solos)</option>
-        <option value="video">Solo video (sin imagen)</option>
-      </select>
-      <p class="hint">Si solo cargás la imagen o solo el video, se usa eso nomás. Si cargás los dos, se aplica el modo elegido.</p>
-    </div>
+    <details class="seccion" id="secFondo">
+      <summary>🖼️ Fondo del hero</summary>
+      <div class="contenido-seccion">
+        <div class="grupo-media">
+          <label>Imagen de fondo del hero (opcional)</label>
+          <input type="text" id="fFondo" placeholder="https://...">
+          <label>Video de fondo (opcional, YouTube, Drive o .mp4/.webm)</label>
+          <input type="text" id="fFondoVideo" placeholder="https://...">
+          <label>Modo</label>
+          <select id="fFondoModo">
+            <option value="hover">Hover (imagen, video al pasar el mouse)</option>
+            <option value="rotativo">Rotativo (alternan solos)</option>
+            <option value="video">Solo video (sin imagen)</option>
+          </select>
+          <p class="hint">Si solo cargás la imagen o solo el video, se usa eso nomás. Si cargás los dos, se aplica el modo elegido.</p>
+        </div>
+      </div>
+    </details>
 
-    <label>Videos del hero</label>
-    <p class="hint">Para cada posición podés poner solo un video, o un video + una imagen: en modo "Hover" se ve la imagen y el video se reproduce al pasar el mouse por encima; en modo "Rotativo" van alternando solos cada pocos segundos, sin necesidad de tocar nada.</p>
+    <details class="seccion" id="secVideos">
+      <summary>🎬 Videos del hero (trailers)</summary>
+      <div class="contenido-seccion">
+        <p class="hint">Para cada posición podés poner solo un video, o un video + una imagen: en modo "Hover" se ve la imagen y el video se reproduce al pasar el mouse por encima; en modo "Rotativo" van alternando solos cada pocos segundos.</p>
 
-    <div class="grupo-media">
-      <label>Video izquierdo (YouTube, Drive o .mp4/.webm)</label>
-      <input type="text" id="fVideoIzq">
-      <label>Imagen izquierda (opcional, para hover/rotativo)</label>
-      <input type="text" id="fImagenIzq" placeholder="https://...">
-      <label>Modo</label>
-      <select id="fModoIzq">
-        <option value="hover">Hover (imagen, video al pasar el mouse)</option>
-        <option value="rotativo">Rotativo (alternan solos)</option>
-        <option value="video">Solo video (sin imagen)</option>
-      </select>
-    </div>
+        <p class="subgrupo-titulo">Izquierda</p>
+        <div class="grupo-media">
+          <label>Video (YouTube, Drive o .mp4/.webm)</label>
+          <input type="text" id="fVideoIzq">
+          <label>Imagen (opcional, para hover/rotativo)</label>
+          <input type="text" id="fImagenIzq" placeholder="https://...">
+          <label>Modo</label>
+          <select id="fModoIzq">
+            <option value="hover">Hover (imagen, video al pasar el mouse)</option>
+            <option value="rotativo">Rotativo (alternan solos)</option>
+            <option value="video">Solo video (sin imagen)</option>
+          </select>
+        </div>
 
-    <div class="grupo-media">
-      <label>Video centro (opcional)</label>
-      <input type="text" id="fVideoCentro">
-      <label>Imagen centro (opcional, para hover/rotativo)</label>
-      <input type="text" id="fImagenCentro" placeholder="https://...">
-      <label>Modo</label>
-      <select id="fModoCentro">
-        <option value="hover">Hover (imagen, video al pasar el mouse)</option>
-        <option value="rotativo">Rotativo (alternan solos)</option>
-        <option value="video">Solo video (sin imagen)</option>
-      </select>
-    </div>
+        <p class="subgrupo-titulo">Centro</p>
+        <div class="grupo-media">
+          <label>Video (opcional)</label>
+          <input type="text" id="fVideoCentro">
+          <label>Imagen (opcional, para hover/rotativo)</label>
+          <input type="text" id="fImagenCentro" placeholder="https://...">
+          <label>Modo</label>
+          <select id="fModoCentro">
+            <option value="hover">Hover (imagen, video al pasar el mouse)</option>
+            <option value="rotativo">Rotativo (alternan solos)</option>
+            <option value="video">Solo video (sin imagen)</option>
+          </select>
+        </div>
 
-    <div class="grupo-media">
-      <label>Video derecho (opcional)</label>
-      <input type="text" id="fVideoDer">
-      <label>Imagen derecha (opcional, para hover/rotativo)</label>
-      <input type="text" id="fImagenDer" placeholder="https://...">
-      <label>Modo</label>
-      <select id="fModoDer">
-        <option value="hover">Hover (imagen, video al pasar el mouse)</option>
-        <option value="rotativo">Rotativo (alternan solos)</option>
-        <option value="video">Solo video (sin imagen)</option>
-      </select>
-    </div>
+        <p class="subgrupo-titulo">Derecha</p>
+        <div class="grupo-media">
+          <label>Video (opcional)</label>
+          <input type="text" id="fVideoDer">
+          <label>Imagen (opcional, para hover/rotativo)</label>
+          <input type="text" id="fImagenDer" placeholder="https://...">
+          <label>Modo</label>
+          <select id="fModoDer">
+            <option value="hover">Hover (imagen, video al pasar el mouse)</option>
+            <option value="rotativo">Rotativo (alternan solos)</option>
+            <option value="video">Solo video (sin imagen)</option>
+          </select>
+        </div>
+      </div>
+    </details>
 
-    <label>Título de la sección de descargas</label>
-    <input type="text" id="fPeso" placeholder="Ej: DESCOMPRIMIDO (90GB) solo la parte 1 tiene acortador">
+    <details class="seccion" id="secDescargas" open>
+      <summary>⬇️ Descargas</summary>
+      <div class="contenido-seccion">
+        <label>Título de la sección de descargas</label>
+        <input type="text" id="fPeso" placeholder="Ej: DESCOMPRIMIDO (90GB) solo la parte 1 tiene acortador">
 
-    <label>Links de descarga</label>
-    <div id="descargasList"></div>
-    <button class="btn-secondary" id="btnAddDescarga" type="button">+ Agregar link</button>
+        <label>Links de descarga</label>
+        <div id="descargasList"></div>
+        <button class="btn-secondary" id="btnAddDescarga" type="button">+ Agregar link</button>
+      </div>
+    </details>
 
-    <label>Link de verificación (YouTube, Drive o video directo, opcional)</label>
-    <input type="text" id="fVerificacion" placeholder="https://drive.google.com/file/d/.../view">
+    <details class="seccion" id="secDetalles">
+      <summary>📋 Verificación y detalles</summary>
+      <div class="contenido-seccion">
+        <label>Link de verificación (YouTube, Drive o video directo, opcional)</label>
+        <input type="text" id="fVerificacion" placeholder="https://drive.google.com/file/d/.../view">
 
-    <label>Contenido / DLCs (una línea por ítem, opcional)</label>
-    <div id="contenidoList"></div>
-    <button class="btn-secondary" id="btnAddContenido" type="button">+ Agregar línea</button>
+        <label>Contenido / DLCs (una línea por ítem, opcional)</label>
+        <div id="contenidoList"></div>
+        <button class="btn-secondary" id="btnAddContenido" type="button">+ Agregar línea</button>
 
-    <label>Requisitos del sistema (una línea por ítem, opcional)</label>
-    <div id="requisitosList"></div>
-    <button class="btn-secondary" id="btnAddRequisito" type="button">+ Agregar línea</button>
+        <label>Requisitos del sistema (una línea por ítem, opcional)</label>
+        <div id="requisitosList"></div>
+        <button class="btn-secondary" id="btnAddRequisito" type="button">+ Agregar línea</button>
 
-    <label>Información del juego (una línea por ítem, opcional)</label>
-    <div id="infoJuegoList"></div>
-    <button class="btn-secondary" id="btnAddInfo" type="button">+ Agregar línea</button>
+        <label>Información del juego (una línea por ítem, opcional)</label>
+        <div id="infoJuegoList"></div>
+        <button class="btn-secondary" id="btnAddInfo" type="button">+ Agregar línea</button>
+      </div>
+    </details>
 
-    <label>Galería de capturas (una URL de imagen por fila, opcional)</label>
-    <div id="galeriaList"></div>
-    <button class="btn-secondary" id="btnAddImg" type="button">+ Agregar imagen</button>
+    <details class="seccion" id="secGaleria">
+      <summary>📸 Galería de capturas</summary>
+      <div class="contenido-seccion">
+        <label>Galería (una URL de imagen por fila, opcional)</label>
+        <div id="galeriaList"></div>
+        <button class="btn-secondary" id="btnAddImg" type="button">+ Agregar imagen</button>
+      </div>
+    </details>
 
     <div>
       <button class="btn-primary" id="btnGuardar" type="button">Guardar página</button>
@@ -220,26 +265,35 @@ small{color:var(--muted);display:block;margin-top:4px;font-size:12px;}
       <option value="pelicula">Película (un solo video)</option>
     </select>
 
-    <label>Poster / imagen vertical (URL, opcional)</label>
-    <input type="text" id="sPoster" placeholder="https://...">
+    <details class="seccion" id="secFicha">
+      <summary>🖼️ Ficha (poster, fondo, sinopsis)</summary>
+      <div class="contenido-seccion">
+        <label>Poster / imagen vertical (URL, opcional)</label>
+        <input type="text" id="sPoster" placeholder="https://...">
 
-    <label>Fondo de la ficha (imagen o video, URL, opcional)</label>
-    <input type="text" id="sFondo" placeholder="https://... (imagen, .mp4, o link de YouTube)">
-    <p class="hint">Podés poner una imagen normal, un video .mp4, o un link de YouTube — si es video, se reproduce de fondo en loop y sin sonido.</p>
+        <label>Fondo de la ficha (imagen o video, URL, opcional)</label>
+        <input type="text" id="sFondo" placeholder="https://... (imagen, .mp4, o link de YouTube)">
+        <p class="hint">Podés poner una imagen normal, un video .mp4, o un link de YouTube — si es video, se reproduce de fondo en loop y sin sonido.</p>
 
-    <label>Año (opcional)</label>
-    <input type="text" id="sAnio" placeholder="2024">
+        <label>Año (opcional)</label>
+        <input type="text" id="sAnio" placeholder="2024">
 
-    <label>Género (opcional)</label>
-    <input type="text" id="sGenero" placeholder="Acción, Aventura, Anime...">
+        <label>Género (opcional)</label>
+        <input type="text" id="sGenero" placeholder="Acción, Aventura, Anime...">
 
-    <label>Sinopsis (opcional)</label>
-    <textarea id="sSinopsis" placeholder="De qué trata..."></textarea>
+        <label>Sinopsis (opcional)</label>
+        <textarea id="sSinopsis" placeholder="De qué trata..."></textarea>
+      </div>
+    </details>
 
-    <label>Capítulos</label>
-    <p class="hint">Pegá el link normal de YouTube (podés usar videos "no listados", funcionan igual), el link para compartir de Google Drive, o un link directo a un video (.mp4/.webm, como los trailers de Steam). Se detecta solo cuál es cuál. Si es una película, cargá un solo capítulo.</p>
-    <div id="capitulosList"></div>
-    <button class="btn-secondary" id="btnAddCapitulo" type="button">+ Agregar capítulo</button>
+    <details class="seccion" id="secCapitulos" open>
+      <summary>🎬 Capítulos</summary>
+      <div class="contenido-seccion">
+        <p class="hint">Pegá el link normal de YouTube (podés usar videos "no listados", funcionan igual), el link para compartir de Google Drive, o un link directo a un video (.mp4/.webm, como los trailers de Steam). Se detecta solo cuál es cuál. Si es una película, cargá un solo capítulo.</p>
+        <div id="capitulosList"></div>
+        <button class="btn-secondary" id="btnAddCapitulo" type="button">+ Agregar capítulo</button>
+      </div>
+    </details>
 
     <div>
       <button class="btn-primary" id="btnGuardarSerie" type="button">Guardar serie</button>
@@ -378,6 +432,11 @@ function limpiarFormulario(){
   ["descargasList","contenidoList","requisitosList","infoJuegoList","galeriaList"].forEach(id => document.getElementById(id).innerHTML = "");
   document.getElementById("formTitulo").textContent = "Nueva página";
   document.getElementById("btnCancelar").style.display = "none";
+  document.getElementById("secFondo").open = false;
+  document.getElementById("secVideos").open = false;
+  document.getElementById("secDescargas").open = true;
+  document.getElementById("secDetalles").open = false;
+  document.getElementById("secGaleria").open = false;
   formMsg.textContent = "";
   editandoSlug = null;
 }
@@ -456,14 +515,17 @@ async function cargarLista(){
     slugs.forEach(slug => {
       const d = data[slug];
       const link = `${location.origin}${location.pathname.replace("admin.html","juego.html")}?slug=${slug}`;
+      const miniatura = d.fondo || d.imagenIzq || d.imagenCentro || d.imagenDer || (d.galeria && d.galeria[0]) || "";
       const item = document.createElement("div");
       item.className = "pagina-item";
       item.innerHTML = `
+        ${miniatura ? `<img class="mini-thumb" src="${miniatura}">` : ""}
         <div class="pagina-info">
           <div class="titulo">${d.titulo || slug}</div>
           <div class="link">${link}</div>
         </div>
         <div>
+          <a class="btn-secondary" href="${link}" target="_blank" rel="noopener">↗ Abrir página</a>
           <button class="btn-secondary" type="button" data-accion="copiar">Copiar link</button>
           <button class="btn-secondary" type="button" data-accion="editar">Editar</button>
           <button class="btn-danger" type="button" data-accion="eliminar">Eliminar</button>
@@ -514,6 +576,12 @@ function cargarParaEditar(slug, d){
 
   document.getElementById("galeriaList").innerHTML = "";
   (d.galeria || []).forEach(v => crearFilaSimple("galeriaList", v));
+
+  document.getElementById("secFondo").open = !!(d.fondo || d.fondoVideo);
+  document.getElementById("secVideos").open = !!(d.videoIzq || d.videoCentro || d.videoDer || d.imagenIzq || d.imagenCentro || d.imagenDer);
+  document.getElementById("secDescargas").open = true;
+  document.getElementById("secDetalles").open = !!(d.verificacion || (d.contenido||[]).length || (d.requisitos||[]).length || (d.infoJuego||[]).length);
+  document.getElementById("secGaleria").open = !!(d.galeria||[]).length;
 
   document.getElementById("btnCancelar").style.display = "inline-block";
   window.scrollTo({top:0, behavior:"smooth"});
@@ -609,6 +677,8 @@ function limpiarFormularioSerie(){
   document.getElementById("capitulosList").innerHTML = "";
   document.getElementById("formTituloSerie").textContent = "Nueva serie";
   document.getElementById("btnCancelarSerie").style.display = "none";
+  document.getElementById("secFicha").open = false;
+  document.getElementById("secCapitulos").open = true;
   formMsgSerie.textContent = "";
   editandoSlugSerie = null;
 }
@@ -679,14 +749,17 @@ async function cargarListaSeries(){
     slugs.forEach(slug => {
       const s = data[slug];
       const link = `${location.origin}${location.pathname.replace("admin.html","serie.html")}?slug=${slug}`;
+      const miniatura = s.poster || s.fondo || "";
       const item = document.createElement("div");
       item.className = "pagina-item";
       item.innerHTML = `
+        ${miniatura ? `<img class="mini-thumb" src="${miniatura}">` : ""}
         <div class="pagina-info">
           <div class="titulo">${s.titulo || slug} <small style="display:inline;">(${(s.capitulos||[]).length} capítulos)</small></div>
           <div class="link">${link}</div>
         </div>
         <div>
+          <a class="btn-secondary" href="${link}" target="_blank" rel="noopener">↗ Abrir página</a>
           <button class="btn-secondary" type="button" data-accion="copiar">Copiar link</button>
           <button class="btn-secondary" type="button" data-accion="editar">Editar</button>
           <button class="btn-danger" type="button" data-accion="eliminar">Eliminar</button>
@@ -724,6 +797,9 @@ function cargarSerieParaEditar(slug, s){
     else valorMostrado = `https://drive.google.com/file/d/${cap.id}/view`;
     crearFilaCapitulo(cap.label, valorMostrado);
   });
+
+  document.getElementById("secFicha").open = !!(s.poster || s.fondo || s.anio || s.genero || s.sinopsis);
+  document.getElementById("secCapitulos").open = true;
 
   document.getElementById("btnCancelarSerie").style.display = "inline-block";
   window.scrollTo({top:0, behavior:"smooth"});
