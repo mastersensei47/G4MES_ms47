@@ -95,11 +95,11 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
 
 .mini-thumb{width:54px;height:54px;object-fit:cover;border-radius:9px;border:1px solid var(--line);flex-shrink:0;background:var(--card2);}
 
-.grupo-header{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin:22px 0 10px;display:flex;align-items:center;gap:10px;}
-.grupo-header:first-child{margin-top:0;}
-.grupo-header .linea-grupo{flex:1;height:1px;background:var(--line);}
-.grupo-header.recientes{color:var(--accent2);}
-.grupo-header.recientes .linea-grupo{background:linear-gradient(90deg,rgba(0,229,199,0.4),transparent);}
+.grupo-bloque{margin-top:26px;}
+.grupo-bloque:first-child{margin-top:0;}
+.grupo-header{display:inline-flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 18px;font-weight:700;font-size:13px;margin-bottom:12px;}
+.grupo-header.recientes{background:linear-gradient(135deg,var(--accent),#c4142a);color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(255,43,61,0.3);}
+.grupo-items{border-left:2px solid var(--line);padding-left:14px;margin-left:6px;}
 </style>
 </head>
 <body>
@@ -553,8 +553,19 @@ function crearItemPagina(slug, d){
 function crearEncabezadoGrupo(texto, esReciente){
   const h = document.createElement("div");
   h.className = "grupo-header" + (esReciente ? " recientes" : "");
-  h.innerHTML = `<span>${texto}</span><span class="linea-grupo"></span>`;
+  h.textContent = texto;
   return h;
+}
+
+function crearBloqueGrupo(headerEl, itemsEls){
+  const bloque = document.createElement("div");
+  bloque.className = "grupo-bloque";
+  bloque.appendChild(headerEl);
+  const itemsCont = document.createElement("div");
+  itemsCont.className = "grupo-items";
+  itemsEls.forEach(el => itemsCont.appendChild(el));
+  bloque.appendChild(itemsCont);
+  return bloque;
 }
 
 async function cargarLista(){
@@ -579,8 +590,9 @@ async function cargarLista(){
     const ordenadosPorFecha = [...slugs].sort((a,b) => (data[b].actualizado||0) - (data[a].actualizado||0));
     const recientes = ordenadosPorFecha.slice(0, 5).filter(s => data[s].actualizado);
     if(recientes.length){
-      cont.appendChild(crearEncabezadoGrupo("🕓 Modificados recientemente", true));
-      recientes.forEach(slug => cont.appendChild(crearItemPagina(slug, data[slug])));
+      const header = crearEncabezadoGrupo("🕓 Modificados recientemente", true);
+      const items = recientes.map(slug => crearItemPagina(slug, data[slug]));
+      cont.appendChild(crearBloqueGrupo(header, items));
     }
 
     // Resto agrupado por "grupo / carpeta", los sin grupo al final
@@ -594,8 +606,9 @@ async function cargarLista(){
     if(porGrupo["Sin grupo"]) nombresGrupos.push("Sin grupo");
 
     nombresGrupos.forEach(nombre => {
-      cont.appendChild(crearEncabezadoGrupo(nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre, false));
-      porGrupo[nombre].forEach(slug => cont.appendChild(crearItemPagina(slug, data[slug])));
+      const header = crearEncabezadoGrupo(nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre, false);
+      const items = porGrupo[nombre].map(slug => crearItemPagina(slug, data[slug]));
+      cont.appendChild(crearBloqueGrupo(header, items));
     });
   }catch(err){
     console.error(err);
@@ -843,8 +856,9 @@ async function cargarListaSeries(){
     const ordenadosPorFecha = [...slugs].sort((a,b) => (data[b].actualizado||0) - (data[a].actualizado||0));
     const recientes = ordenadosPorFecha.slice(0, 5).filter(s => data[s].actualizado);
     if(recientes.length){
-      cont.appendChild(crearEncabezadoGrupo("🕓 Modificados recientemente", true));
-      recientes.forEach(slug => cont.appendChild(crearItemSerie(slug, data[slug])));
+      const header = crearEncabezadoGrupo("🕓 Modificados recientemente", true);
+      const items = recientes.map(slug => crearItemSerie(slug, data[slug]));
+      cont.appendChild(crearBloqueGrupo(header, items));
     }
 
     const porGrupo = {};
@@ -857,8 +871,9 @@ async function cargarListaSeries(){
     if(porGrupo["Sin grupo"]) nombresGrupos.push("Sin grupo");
 
     nombresGrupos.forEach(nombre => {
-      cont.appendChild(crearEncabezadoGrupo(nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre, false));
-      porGrupo[nombre].forEach(slug => cont.appendChild(crearItemSerie(slug, data[slug])));
+      const header = crearEncabezadoGrupo(nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre, false);
+      const items = porGrupo[nombre].map(slug => crearItemSerie(slug, data[slug]));
+      cont.appendChild(crearBloqueGrupo(header, items));
     });
   }catch(err){
     console.error(err);
