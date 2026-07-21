@@ -95,11 +95,9 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
 
 .mini-thumb{width:54px;height:54px;object-fit:cover;border-radius:9px;border:1px solid var(--line);flex-shrink:0;background:var(--card2);}
 
-.grupo-bloque{margin-top:26px;}
-.grupo-bloque:first-child{margin-top:0;}
-.grupo-header{display:inline-flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 18px;font-weight:700;font-size:13px;margin-bottom:12px;}
-.grupo-header.recientes{background:linear-gradient(135deg,var(--accent),#c4142a);color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(255,43,61,0.3);}
-.grupo-items{border-left:2px solid var(--line);padding-left:14px;margin-left:6px;}
+.grupo-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.grupo-panel{display:none;}
+.grupo-panel.active{display:block;}
 </style>
 </head>
 <body>
@@ -550,22 +548,40 @@ function crearItemPagina(slug, d){
   return item;
 }
 
-function crearEncabezadoGrupo(texto, esReciente){
-  const h = document.createElement("div");
-  h.className = "grupo-header" + (esReciente ? " recientes" : "");
-  h.textContent = texto;
-  return h;
-}
+// Arma una fila de pestañas horizontales (identica a Juegos/Series) para separar grupos de paginas.
+// grupos: [{ label, items: [elementosDom] }]. Solo se ve el contenido del grupo que este activo.
+function renderGrupoTabs(contenedorId, grupos){
+  const cont = document.getElementById(contenedorId);
+  cont.innerHTML = "";
+  if(grupos.length === 0) return;
 
-function crearBloqueGrupo(headerEl, itemsEls){
-  const bloque = document.createElement("div");
-  bloque.className = "grupo-bloque";
-  bloque.appendChild(headerEl);
-  const itemsCont = document.createElement("div");
-  itemsCont.className = "grupo-items";
-  itemsEls.forEach(el => itemsCont.appendChild(el));
-  bloque.appendChild(itemsCont);
-  return bloque;
+  const tabsRow = document.createElement("div");
+  tabsRow.className = "grupo-tabs";
+  const panelesWrap = document.createElement("div");
+
+  grupos.forEach((grupo, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tab-btn" + (i === 0 ? " active" : "");
+    btn.textContent = grupo.label;
+
+    const panel = document.createElement("div");
+    panel.className = "grupo-panel" + (i === 0 ? " active" : "");
+    grupo.items.forEach(item => panel.appendChild(item));
+
+    btn.addEventListener("click", () => {
+      tabsRow.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      panelesWrap.querySelectorAll(".grupo-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      panel.classList.add("active");
+    });
+
+    tabsRow.appendChild(btn);
+    panelesWrap.appendChild(panel);
+  });
+
+  cont.appendChild(tabsRow);
+  cont.appendChild(panelesWrap);
 }
 
 async function cargarLista(){
@@ -589,11 +605,6 @@ async function cargarLista(){
     // Sección de recientes: las ultimas 5 paginas guardadas/editadas
     const ordenadosPorFecha = [...slugs].sort((a,b) => (data[b].actualizado||0) - (data[a].actualizado||0));
     const recientes = ordenadosPorFecha.slice(0, 5).filter(s => data[s].actualizado);
-    if(recientes.length){
-      const header = crearEncabezadoGrupo("🕓 Modificados recientemente", true);
-      const items = recientes.map(slug => crearItemPagina(slug, data[slug]));
-      cont.appendChild(crearBloqueGrupo(header, items));
-    }
 
     // Resto agrupado por "grupo / carpeta", los sin grupo al final
     const porGrupo = {};
@@ -605,11 +616,17 @@ async function cargarLista(){
     const nombresGrupos = Object.keys(porGrupo).filter(g => g !== "Sin grupo").sort();
     if(porGrupo["Sin grupo"]) nombresGrupos.push("Sin grupo");
 
+    const grupos = [];
+    if(recientes.length){
+      grupos.push({ label: "🕓 Recientes", items: recientes.map(slug => crearItemPagina(slug, data[slug])) });
+    }
     nombresGrupos.forEach(nombre => {
-      const header = crearEncabezadoGrupo(nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre, false);
-      const items = porGrupo[nombre].map(slug => crearItemPagina(slug, data[slug]));
-      cont.appendChild(crearBloqueGrupo(header, items));
+      grupos.push({
+        label: nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre,
+        items: porGrupo[nombre].map(slug => crearItemPagina(slug, data[slug]))
+      });
     });
+    renderGrupoTabs("listaPaginas", grupos);
   }catch(err){
     console.error(err);
     cont.innerHTML = "<p>Error al cargar las páginas.</p>";
@@ -855,11 +872,6 @@ async function cargarListaSeries(){
 
     const ordenadosPorFecha = [...slugs].sort((a,b) => (data[b].actualizado||0) - (data[a].actualizado||0));
     const recientes = ordenadosPorFecha.slice(0, 5).filter(s => data[s].actualizado);
-    if(recientes.length){
-      const header = crearEncabezadoGrupo("🕓 Modificados recientemente", true);
-      const items = recientes.map(slug => crearItemSerie(slug, data[slug]));
-      cont.appendChild(crearBloqueGrupo(header, items));
-    }
 
     const porGrupo = {};
     slugs.forEach(slug => {
@@ -870,11 +882,17 @@ async function cargarListaSeries(){
     const nombresGrupos = Object.keys(porGrupo).filter(g => g !== "Sin grupo").sort();
     if(porGrupo["Sin grupo"]) nombresGrupos.push("Sin grupo");
 
+    const grupos = [];
+    if(recientes.length){
+      grupos.push({ label: "🕓 Recientes", items: recientes.map(slug => crearItemSerie(slug, data[slug])) });
+    }
     nombresGrupos.forEach(nombre => {
-      const header = crearEncabezadoGrupo(nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre, false);
-      const items = porGrupo[nombre].map(slug => crearItemSerie(slug, data[slug]));
-      cont.appendChild(crearBloqueGrupo(header, items));
+      grupos.push({
+        label: nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre,
+        items: porGrupo[nombre].map(slug => crearItemSerie(slug, data[slug]))
+      });
     });
+    renderGrupoTabs("listaSeries", grupos);
   }catch(err){
     console.error(err);
     cont.innerHTML = "<p>Error al cargar las series.</p>";
