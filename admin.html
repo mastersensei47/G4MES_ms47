@@ -94,6 +94,12 @@ a.btn-secondary,a.btn-primary,a.btn-danger{cursor:pointer;border-radius:8px;padd
 a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(0.97);}
 
 .mini-thumb{width:54px;height:54px;object-fit:cover;border-radius:9px;border:1px solid var(--line);flex-shrink:0;background:var(--card2);}
+
+.grupo-header{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin:22px 0 10px;display:flex;align-items:center;gap:10px;}
+.grupo-header:first-child{margin-top:0;}
+.grupo-header .linea-grupo{flex:1;height:1px;background:var(--line);}
+.grupo-header.recientes{color:var(--accent2);}
+.grupo-header.recientes .linea-grupo{background:linear-gradient(90deg,rgba(0,229,199,0.4),transparent);}
 </style>
 </head>
 <body>
@@ -129,6 +135,10 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
 
     <label>Slug (parte del link, se genera solo)</label>
     <input type="text" id="fSlug" placeholder="ej-god-of-war-ragnarok">
+
+    <label>Grupo / carpeta (opcional, para organizar la lista de abajo)</label>
+    <input type="text" id="fGrupo" list="listaGruposJuegos" placeholder="Ej: Terror, Favoritos, Para revisar...">
+    <datalist id="listaGruposJuegos"></datalist>
 
     <div class="grid-secciones">
 
@@ -265,6 +275,10 @@ a.btn-secondary:active,a.btn-primary:active,a.btn-danger:active{transform:scale(
 
     <label>Slug (parte del link, se genera solo)</label>
     <input type="text" id="sSlug" placeholder="o11ce">
+
+    <label>Grupo / carpeta (opcional, para organizar la lista de abajo)</label>
+    <input type="text" id="sGrupo" list="listaGruposSeries" placeholder="Ej: Anime, Terror, Favoritos...">
+    <datalist id="listaGruposSeries"></datalist>
 
     <label>Tipo</label>
     <select id="sTipoContenido">
@@ -437,7 +451,7 @@ document.getElementById("fTitulo").addEventListener("input", (e) => {
 let editandoSlug = null;
 
 function limpiarFormulario(){
-  ["fTitulo","fSlug","fFondo","fFondoVideo","fVideoIzq","fVideoCentro","fVideoDer","fImagenIzq","fImagenCentro","fImagenDer","fPeso","fVerificacion"].forEach(id => document.getElementById(id).value = "");
+  ["fTitulo","fSlug","fGrupo","fFondo","fFondoVideo","fVideoIzq","fVideoCentro","fVideoDer","fImagenIzq","fImagenCentro","fImagenDer","fPeso","fVerificacion"].forEach(id => document.getElementById(id).value = "");
   ["fModoIzq","fModoCentro","fModoDer","fFondoModo"].forEach(id => document.getElementById(id).value = "hover");
   document.getElementById("fSlug").readOnly = false;
   ["descargasList","contenidoList","requisitosList","infoJuegoList","galeriaList"].forEach(id => document.getElementById(id).innerHTML = "");
@@ -469,6 +483,8 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
 
   const data = {
     titulo,
+    grupo: document.getElementById("fGrupo").value.trim(),
+    actualizado: Date.now(),
     fondo: document.getElementById("fFondo").value.trim(),
     fondoVideo: document.getElementById("fFondoVideo").value.trim(),
     fondoModo: document.getElementById("fFondoModo").value,
@@ -511,6 +527,36 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
   }
 });
 
+function crearItemPagina(slug, d){
+  const link = `${location.origin}${location.pathname.replace("admin.html","juego.html")}?slug=${slug}`;
+  const miniatura = d.fondo || d.imagenIzq || d.imagenCentro || d.imagenDer || (d.galeria && d.galeria[0]) || "";
+  const item = document.createElement("div");
+  item.className = "pagina-item";
+  item.innerHTML = `
+    ${miniatura ? `<img class="mini-thumb" src="${miniatura}">` : ""}
+    <div class="pagina-info">
+      <div class="titulo">${d.titulo || slug}</div>
+      <div class="link">${link}</div>
+    </div>
+    <div>
+      <a class="btn-secondary" href="${link}" target="_blank" rel="noopener">↗ Abrir página</a>
+      <button class="btn-secondary" type="button" data-accion="copiar">Copiar link</button>
+      <button class="btn-secondary" type="button" data-accion="editar">Editar</button>
+      <button class="btn-danger" type="button" data-accion="eliminar">Eliminar</button>
+    </div>`;
+  item.querySelector('[data-accion="copiar"]').addEventListener("click", () => navigator.clipboard.writeText(link));
+  item.querySelector('[data-accion="editar"]').addEventListener("click", () => cargarParaEditar(slug, d));
+  item.querySelector('[data-accion="eliminar"]').addEventListener("click", () => eliminarPagina(slug));
+  return item;
+}
+
+function crearEncabezadoGrupo(texto, esReciente){
+  const h = document.createElement("div");
+  h.className = "grupo-header" + (esReciente ? " recientes" : "");
+  h.innerHTML = `<span>${texto}</span><span class="linea-grupo"></span>`;
+  return h;
+}
+
 async function cargarLista(){
   const cont = document.getElementById("listaPaginas");
   cont.innerHTML = "Cargando...";
@@ -520,31 +566,36 @@ async function cargarLista(){
     const slugs = Object.keys(data);
     if(slugs.length === 0){
       cont.innerHTML = "<p>No hay páginas creadas todavía.</p>";
+      document.getElementById("listaGruposJuegos").innerHTML = "";
       return;
     }
     cont.innerHTML = "";
+
+    // Datalist de grupos ya usados, para autocompletar en el formulario
+    const gruposUnicos = [...new Set(slugs.map(s => (data[s].grupo || "").trim()).filter(Boolean))].sort();
+    document.getElementById("listaGruposJuegos").innerHTML = gruposUnicos.map(g => `<option value="${g}">`).join("");
+
+    // Sección de recientes: las ultimas 5 paginas guardadas/editadas
+    const ordenadosPorFecha = [...slugs].sort((a,b) => (data[b].actualizado||0) - (data[a].actualizado||0));
+    const recientes = ordenadosPorFecha.slice(0, 5).filter(s => data[s].actualizado);
+    if(recientes.length){
+      cont.appendChild(crearEncabezadoGrupo("🕓 Modificados recientemente", true));
+      recientes.forEach(slug => cont.appendChild(crearItemPagina(slug, data[slug])));
+    }
+
+    // Resto agrupado por "grupo / carpeta", los sin grupo al final
+    const porGrupo = {};
     slugs.forEach(slug => {
-      const d = data[slug];
-      const link = `${location.origin}${location.pathname.replace("admin.html","juego.html")}?slug=${slug}`;
-      const miniatura = d.fondo || d.imagenIzq || d.imagenCentro || d.imagenDer || (d.galeria && d.galeria[0]) || "";
-      const item = document.createElement("div");
-      item.className = "pagina-item";
-      item.innerHTML = `
-        ${miniatura ? `<img class="mini-thumb" src="${miniatura}">` : ""}
-        <div class="pagina-info">
-          <div class="titulo">${d.titulo || slug}</div>
-          <div class="link">${link}</div>
-        </div>
-        <div>
-          <a class="btn-secondary" href="${link}" target="_blank" rel="noopener">↗ Abrir página</a>
-          <button class="btn-secondary" type="button" data-accion="copiar">Copiar link</button>
-          <button class="btn-secondary" type="button" data-accion="editar">Editar</button>
-          <button class="btn-danger" type="button" data-accion="eliminar">Eliminar</button>
-        </div>`;
-      item.querySelector('[data-accion="copiar"]').addEventListener("click", () => navigator.clipboard.writeText(link));
-      item.querySelector('[data-accion="editar"]').addEventListener("click", () => cargarParaEditar(slug, d));
-      item.querySelector('[data-accion="eliminar"]').addEventListener("click", () => eliminarPagina(slug));
-      cont.appendChild(item);
+      const g = (data[slug].grupo || "").trim() || "Sin grupo";
+      if(!porGrupo[g]) porGrupo[g] = [];
+      porGrupo[g].push(slug);
+    });
+    const nombresGrupos = Object.keys(porGrupo).filter(g => g !== "Sin grupo").sort();
+    if(porGrupo["Sin grupo"]) nombresGrupos.push("Sin grupo");
+
+    nombresGrupos.forEach(nombre => {
+      cont.appendChild(crearEncabezadoGrupo(nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre, false));
+      porGrupo[nombre].forEach(slug => cont.appendChild(crearItemPagina(slug, data[slug])));
     });
   }catch(err){
     console.error(err);
@@ -558,6 +609,7 @@ function cargarParaEditar(slug, d){
   document.getElementById("fTitulo").value = d.titulo || "";
   document.getElementById("fSlug").value = slug;
   document.getElementById("fSlug").readOnly = true;
+  document.getElementById("fGrupo").value = d.grupo || "";
   document.getElementById("fFondo").value = d.fondo || "";
   document.getElementById("fFondoVideo").value = d.fondoVideo || "";
   document.getElementById("fFondoModo").value = d.fondoModo || "hover";
@@ -679,6 +731,7 @@ function limpiarFormularioSerie(){
   document.getElementById("sTitulo").value = "";
   document.getElementById("sSlug").value = "";
   document.getElementById("sSlug").readOnly = false;
+  document.getElementById("sGrupo").value = "";
   document.getElementById("sTipoContenido").value = "serie";
   document.getElementById("sPoster").value = "";
   document.getElementById("sFondo").value = "";
@@ -726,6 +779,8 @@ document.getElementById("btnGuardarSerie").addEventListener("click", async () =>
     }
     await set(ref(db, "paginasSeries/" + slug), {
       titulo,
+      grupo: document.getElementById("sGrupo").value.trim(),
+      actualizado: Date.now(),
       tipo: document.getElementById("sTipoContenido").value,
       poster: document.getElementById("sPoster").value.trim(),
       fondo: document.getElementById("sFondo").value.trim(),
@@ -745,6 +800,29 @@ document.getElementById("btnGuardarSerie").addEventListener("click", async () =>
   }
 });
 
+function crearItemSerie(slug, s){
+  const link = `${location.origin}${location.pathname.replace("admin.html","serie.html")}?slug=${slug}`;
+  const miniatura = s.poster || s.fondo || "";
+  const item = document.createElement("div");
+  item.className = "pagina-item";
+  item.innerHTML = `
+    ${miniatura ? `<img class="mini-thumb" src="${miniatura}">` : ""}
+    <div class="pagina-info">
+      <div class="titulo">${s.titulo || slug} <small style="display:inline;">(${(s.capitulos||[]).length} capítulos)</small></div>
+      <div class="link">${link}</div>
+    </div>
+    <div>
+      <a class="btn-secondary" href="${link}" target="_blank" rel="noopener">↗ Abrir página</a>
+      <button class="btn-secondary" type="button" data-accion="copiar">Copiar link</button>
+      <button class="btn-secondary" type="button" data-accion="editar">Editar</button>
+      <button class="btn-danger" type="button" data-accion="eliminar">Eliminar</button>
+    </div>`;
+  item.querySelector('[data-accion="copiar"]').addEventListener("click", () => navigator.clipboard.writeText(link));
+  item.querySelector('[data-accion="editar"]').addEventListener("click", () => cargarSerieParaEditar(slug, s));
+  item.querySelector('[data-accion="eliminar"]').addEventListener("click", () => eliminarSerie(slug));
+  return item;
+}
+
 async function cargarListaSeries(){
   const cont = document.getElementById("listaSeries");
   cont.innerHTML = "Cargando...";
@@ -754,31 +832,33 @@ async function cargarListaSeries(){
     const slugs = Object.keys(data);
     if(slugs.length === 0){
       cont.innerHTML = "<p>No hay series creadas todavía.</p>";
+      document.getElementById("listaGruposSeries").innerHTML = "";
       return;
     }
     cont.innerHTML = "";
+
+    const gruposUnicos = [...new Set(slugs.map(s => (data[s].grupo || "").trim()).filter(Boolean))].sort();
+    document.getElementById("listaGruposSeries").innerHTML = gruposUnicos.map(g => `<option value="${g}">`).join("");
+
+    const ordenadosPorFecha = [...slugs].sort((a,b) => (data[b].actualizado||0) - (data[a].actualizado||0));
+    const recientes = ordenadosPorFecha.slice(0, 5).filter(s => data[s].actualizado);
+    if(recientes.length){
+      cont.appendChild(crearEncabezadoGrupo("🕓 Modificados recientemente", true));
+      recientes.forEach(slug => cont.appendChild(crearItemSerie(slug, data[slug])));
+    }
+
+    const porGrupo = {};
     slugs.forEach(slug => {
-      const s = data[slug];
-      const link = `${location.origin}${location.pathname.replace("admin.html","serie.html")}?slug=${slug}`;
-      const miniatura = s.poster || s.fondo || "";
-      const item = document.createElement("div");
-      item.className = "pagina-item";
-      item.innerHTML = `
-        ${miniatura ? `<img class="mini-thumb" src="${miniatura}">` : ""}
-        <div class="pagina-info">
-          <div class="titulo">${s.titulo || slug} <small style="display:inline;">(${(s.capitulos||[]).length} capítulos)</small></div>
-          <div class="link">${link}</div>
-        </div>
-        <div>
-          <a class="btn-secondary" href="${link}" target="_blank" rel="noopener">↗ Abrir página</a>
-          <button class="btn-secondary" type="button" data-accion="copiar">Copiar link</button>
-          <button class="btn-secondary" type="button" data-accion="editar">Editar</button>
-          <button class="btn-danger" type="button" data-accion="eliminar">Eliminar</button>
-        </div>`;
-      item.querySelector('[data-accion="copiar"]').addEventListener("click", () => navigator.clipboard.writeText(link));
-      item.querySelector('[data-accion="editar"]').addEventListener("click", () => cargarSerieParaEditar(slug, s));
-      item.querySelector('[data-accion="eliminar"]').addEventListener("click", () => eliminarSerie(slug));
-      cont.appendChild(item);
+      const g = (data[slug].grupo || "").trim() || "Sin grupo";
+      if(!porGrupo[g]) porGrupo[g] = [];
+      porGrupo[g].push(slug);
+    });
+    const nombresGrupos = Object.keys(porGrupo).filter(g => g !== "Sin grupo").sort();
+    if(porGrupo["Sin grupo"]) nombresGrupos.push("Sin grupo");
+
+    nombresGrupos.forEach(nombre => {
+      cont.appendChild(crearEncabezadoGrupo(nombre === "Sin grupo" ? "📄 Sin grupo" : "📁 " + nombre, false));
+      porGrupo[nombre].forEach(slug => cont.appendChild(crearItemSerie(slug, data[slug])));
     });
   }catch(err){
     console.error(err);
@@ -792,6 +872,7 @@ function cargarSerieParaEditar(slug, s){
   document.getElementById("sTitulo").value = s.titulo || "";
   document.getElementById("sSlug").value = slug;
   document.getElementById("sSlug").readOnly = true;
+  document.getElementById("sGrupo").value = s.grupo || "";
   document.getElementById("sTipoContenido").value = s.tipo || "serie";
   document.getElementById("sPoster").value = s.poster || "";
   document.getElementById("sFondo").value = s.fondo || "";
